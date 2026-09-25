@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم البورتفوليو</title>
+<style>
+:root{--bg:#04060a;--card:#0d131d;--line:rgba(255,255,255,.09);--text:#f7f9fc;--muted:#8e9aaa;--blue:#4f8cff;--green:#55df9a;--red:#ff5f6d}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px 80px}
+.wrap{max-width:760px;margin:auto}
+h1{font-size:22px;margin:0 0 6px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 26px}
+fieldset{border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px;background:var(--card)}
+legend{padding:0 8px;font-size:13px;font-weight:700;color:#7ba9ff}
+label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px}
+input,textarea{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:#0a0f18;color:var(--text);font-size:13px;font-family:inherit}
+textarea{resize:vertical;min-height:60px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+button{cursor:pointer;border:0;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:700;font-family:inherit}
+.btn-main{background:var(--blue);color:#fff;width:100%}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.item{border:1px dashed var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.item h4{margin:0 0 8px;font-size:12px;color:#7ba9ff}
+#status{position:fixed;bottom:0;left:0;width:100%;padding:12px;text-align:center;font-size:13px;font-weight:600;display:none;z-index:999}
+#status.ok{display:block;background:rgba(85,223,154,.15);color:var(--green);border-top:1px solid rgba(85,223,154,.3)}
+#status.err{display:block;background:rgba(255,95,109,.15);color:var(--red);border-top:1px solid rgba(255,95,109,.3)}
+#status.loading{display:block;background:rgba(79,140,255,.15);color:#7ba9ff;border-top:1px solid rgba(79,140,255,.3)}
+#editor{display:none}
+small.hint{display:block;color:#5c6577;font-size:11px;margin-top:4px}
+.top-actions{display:flex;gap:10px;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>لوحة تحكم البورتفوليو</h1>
+<p class="sub">تعديل مباشر على index.html في مستودعك على GitHub.</p>
+
+<fieldset>
+<legend>الاتصال بـ GitHub</legend>
+<div class="row">
+<div><label>اسم المستخدم (Owner)</label><input id="cfgOwner" placeholder="mahmoudmo159"></div>
+<div><label>اسم المستودع (Repo)</label><input id="cfgRepo" placeholder="portfolio"></div>
+</div>
+<div class="row">
+<div><label>اسم الملف</label><input id="cfgPath" value="index.html"></div>
+<div><label>الـ Branch</label><input id="cfgBranch" value="main"></div>
+</div>
+<label>Personal Access Token</label>
+<input id="cfgToken" type="password" placeholder="ghp_xxxxxxxxxxxx">
+<small class="hint">التوكن بيتخزن في متصفحك بس (localStorage) ومش بيتبعت لحد غير GitHub. اعمله من: GitHub → Settings → Developer settings → Fine-grained tokens، بصلاحية Contents: Read & write على المستودع ده بس.</small>
+<div class="top-actions" style="margin-top:16px">
+<button class="btn-main" id="loadBtn" style="flex:1">تحميل الملف</button>
+</div>
+</fieldset>
+
+<div id="editor">
+
+<fieldset><legend>عام</legend>
+<label>عنوان التاب (Title)</label><input id="f_title">
+<label>وصف الميتا</label><textarea id="f_metaDesc"></textarea>
+<label>اسم الشعار في القائمة العلوية</label><input id="f_logoText">
+<div class="row">
+<div><label>الاسم الأول (شاشة البداية)</label><input id="f_introFirst"></div>
+<div><label>الاسم الأخير (شاشة البداية)</label><input id="f_introLast"></div>
+</div>
+<label>تسمية شاشة البداية</label><input id="f_introLabel">
+</fieldset>
+
+<fieldset><legend>القسم الرئيسي (Hero)</legend>
+<label>نص الشارة العلوية (Badge)</label><input id="f_badgeText">
+<div class="row2">
+<div><label>بداية العنوان</label><input id="f_heroPre"></div>
+<div><label>كلمة مميزة 1</label><input id="f_heroWord1"></div>
+</div>
+<div class="row2">
+<div><label>وسط العنوان</label><input id="f_heroMid"></div>
+<div><label>كلمة مميزة 2</label><input id="f_heroWord2"></div>
+</div>
+<label>الفقرة تحت العنوان</label><textarea id="f_heroText"></textarea>
+<div class="row">
+<div><label>نص الزرار الأول</label><input id="f_btnPrimary"></div>
+<div><label>نص الزرار الثاني</label><input id="f_btnSecondary"></div>
+</div>
+<div class="row2">
+<div><label>KPI Revenue</label><input id="f_kpi1"></div>
+<div><label>KPI Orders</label><input id="f_kpi2"></div>
+<div><label>KPI Profit</label><input id="f_kpi3"></div>
+</div>
+</fieldset>
+
+<fieldset><legend>الإحصائيات</legend><div id="statsWrap"></div></fieldset>
+<fieldset><legend>المشاريع</legend><div id="projectsWrap"></div></fieldset>
+<fieldset><legend>المهارات</legend><div id="skillsWrap"></div></fieldset>
+
+<fieldset><legend>قسم About</legend>
+<label>العنوان</label><input id="f_aboutHeading">
+<label>فقرة 1</label><textarea id="f_aboutP1"></textarea>
+<label>فقرة 2</label><textarea id="f_aboutP2"></textarea>
+</fieldset>
+
+<fieldset><legend>قسم التواصل</legend>
+<label>Kicker</label><input id="f_contactKicker">
+<div class="row">
+<div><label>بداية العنوان</label><input id="f_contactPre"></div>
+<div><label>الكلمة المميزة</label><input id="f_contactHighlight"></div>
+</div>
+<label>الوصف</label><textarea id="f_contactDesc"></textarea>
+<label>رابط واتساب</label><input id="f_whatsapp">
+<label>الإيميل (بدون mailto:)</label><input id="f_email">
+<label>رابط LinkedIn</label><input id="f_linkedin">
+</fieldset>
+
+<fieldset><legend>الفوتر</legend>
+<label>النص الأيسر (حقوق النشر)</label><input id="f_footerLeft">
+<label>النص الأيمن</label><input id="f_footerRight">
+</fieldset>
+
+<button class="btn-main" id="saveBtn">حفظ التعديلات على GitHub</button>
+</div>
+</div>
+<div id="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CFG_KEYS=['cfgOwner','cfgRepo','cfgPath','cfgBranch','cfgToken'];
+CFG_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v)$(k).value=v;});
+if(!$('cfgPath').value)$('cfgPath').value='index.html';
+if(!$('cfgBranch').value)$('cfgBranch').value='main';
+
+let doc=null,sha=null;
+
+function status(msg,type){const s=$('status');s.textContent=msg;s.className=type;}
+
+function b64Decode(str){return decodeURIComponent(atob(str.replace(/\n/g,'')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));}
+function b64Encode(str){return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,(m,p)=>String.fromCharCode('0x'+p)));}
+
+function apiUrl(){return `https://api.github.com/repos/${$('cfgOwner').value.trim()}/${$('cfgRepo').value.trim()}/contents/${$('cfgPath').value.trim()}`;}
+function headers(){return{Authorization:`Bearer ${$('cfgToken').value.trim()}`,Accept:'application/vnd.github+json'};}
+
+$('loadBtn').addEventListener('click',async()=>{
+  CFG_KEYS.forEach(k=>localStorage.setItem(k,$(k).value));
+  status('جاري تحميل الملف...','loading');
+  try{
+    const res=await fetch(`${apiUrl()}?ref=${$('cfgBranch').value.trim()}`,{headers:headers()});
+    if(!res.ok){const t=await res.text();throw new Error(`${res.status}: ${t}`);}
+    const data=await res.json();
+    sha=data.sha;
+    const html=b64Decode(data.content);
+    doc=new DOMParser().parseFromString(html,'text/html');
+    populateForm();
+    $('editor').style.display='block';
+    status('تم تحميل الملف بنجاح ✓','ok');
+    setTimeout(()=>$('status').style.display='none',2500);
+  }catch(e){status('فشل التحميل: '+e.message,'err');}
+});
+
+function q(sel,idx=0){const els=doc.querySelectorAll(sel);return els[idx]||null;}
+
+function populateForm(){
+  $('f_title').value=doc.querySelector('title').textContent;
+  $('f_metaDesc').value=doc.querySelector('meta[name="description"]').getAttribute('content')||'';
+  const logo=q('.logo');$('f_logoText').value=logo.childNodes[0].textContent;
+  $('f_introLabel').value=q('.intro-label').textContent;
+  $('f_introFirst').value=q('.intro-name .first').textContent;
+  $('f_introLast').value=q('.intro-name .last').textContent;
+
+  const badge=q('.badge');$('f_badgeText').value=badge.childNodes[badge.childNodes.length-1].textContent.trim();
+
+  const h1=q('.hero h1');
+  $('f_heroPre').value=h1.childNodes[0].textContent.trim();
+  $('f_heroWord1').value=q('.hero h1 .gradient',0).textContent;
+  $('f_heroMid').value=h1.childNodes[2].textContent.trim();
+  $('f_heroWord2').value=q('.hero h1 .gradient',1).textContent;
+  $('f_heroText').value=q('.hero-text').textContent;
+  $('f_btnPrimary').value=q('.hero .btn-primary').textContent.trim();
+  $('f_btnSecondary').value=q('.hero .btn-secondary').textContent.trim();
+  const kpis=doc.querySelectorAll('.kpi strong');
+  $('f_kpi1').value=kpis[0].textContent;$('f_kpi2').value=kpis[1].textContent;$('f_kpi3').value=kpis[2].textContent;
+
+  $('f_aboutHeading').value=q('.about-text h2').textContent;
+  const aboutPs=doc.querySelectorAll('.about-text p');
+  $('f_aboutP1').value=aboutPs[0].textContent;$('f_aboutP2').value=aboutPs[1].textContent;
+
+  $('f_contactKicker').value=q('.contact-box .kicker').textContent;
+  const cH2=q('.contact-box h2');
+  $('f_contactPre').value=cH2.childNodes[0].textContent.trim();
+  $('f_contactHighlight').value=q('.contact-box h2 .gradient').textContent;
+  $('f_contactDesc').value=q('.contact-box p').textContent;
+  const cBtns=doc.querySelectorAll('.contact-buttons a');
+  $('f_whatsapp').value=cBtns[0].getAttribute('href');
+  $('f_email').value=(cBtns[1].getAttribute('href')||'').replace('mailto:','');
+  $('f_linkedin').value=cBtns[2].getAttribute('href');
+
+  const footerSpans=doc.querySelectorAll('.footer-inner span');
+  $('f_footerLeft').value=footerSpans[0].textContent;
+  $('f_footerRight').value=footerSpans[1].textContent;
+
+  renderStats();renderProjects();renderSkills();
+}
+
+function renderStats(){
+  const wrap=$('statsWrap');wrap.innerHTML='';
+  doc.querySelectorAll('.stats .stat').forEach((el,i)=>{
+    const counter=el.querySelector('.counter'),label=el.querySelector('span');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h4>إحصائية ${i+1}</h4>
+    <div class="row"><div><label>الرقم</label><input data-stat="${i}" data-f="val" value="${counter.dataset.target}"></div>
+    <div><label>الوصف</label><input data-stat="${i}" data-f="label" value="${label.textContent}"></div></div>`;
+    wrap.appendChild(div);
+  });
+}
+
+function renderProjects(){
+  const wrap=$('projectsWrap');wrap.innerHTML='';
+  doc.querySelectorAll('.projects .project').forEach((el,i)=>{
+    const h3=el.querySelector('h3'),p=el.querySelector('.project-content > p'),tags=[...el.querySelectorAll('.tag')].map(t=>t.textContent).join(', '),link=el.querySelector('.project-link');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h4>مشروع ${i+1}</h4>
+    <label>العنوان</label><input data-proj="${i}" data-f="title" value="${h3.textContent}">
+    <label>الوصف</label><textarea data-proj="${i}" data-f="desc">${p.textContent}</textarea>
+    <label>الوسوم (مفصولة بفاصلة)</label><input data-proj="${i}" data-f="tags" value="${tags}">
+    <label>رابط الداشبورد</label><input data-proj="${i}" data-f="link" value="${link.getAttribute('href')}">`;
+    wrap.appendChild(div);
+  });
+}
+
+function renderSkills(){
+  const wrap=$('skillsWrap');wrap.innerHTML='';
+  doc.querySelectorAll('.skills .skill').forEach((el,i)=>{
+    const icon=el.querySelector('.skill-icon'),h3=el.querySelector('h3'),p=el.querySelector('p');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h4>مهارة ${i+1}</h4>
+    <div class="row2"><div><label>أيقونة</label><input data-skill="${i}" data-f="icon" value="${icon.textContent}"></div>
+    <div style="grid-column:span 2"><label>العنوان</label><input data-skill="${i}" data-f="title" value="${h3.textContent}"></div></div>
+    <label>الوصف</label><textarea data-skill="${i}" data-f="desc">${p.textContent}</textarea>`;
+    wrap.appendChild(div);
+  });
+}
+
+function applyFormToDoc(){
+  doc.querySelector('title').textContent=$('f_title').value;
+  doc.querySelector('meta[name="description"]').setAttribute('content',$('f_metaDesc').value);
+  q('.logo').childNodes[0].textContent=$('f_logoText').value;
+  q('.intro-label').textContent=$('f_introLabel').value;
+  q('.intro-name .first').textContent=$('f_introFirst').value;
+  q('.intro-name .last').textContent=$('f_introLast').value;
+
+  const badge=q('.badge');badge.childNodes[badge.childNodes.length-1].textContent=$('f_badgeText').value;
+
+  const h1=q('.hero h1');
+  h1.childNodes[0].textContent=$('f_heroPre').value+' ';
+  q('.hero h1 .gradient',0).textContent=$('f_heroWord1').value;
+  h1.childNodes[2].textContent=' '+$('f_heroMid').value+' ';
+  q('.hero h1 .gradient',1).textContent=$('f_heroWord2').value;
+  q('.hero-text').textContent=$('f_heroText').value;
+
+  const primaryBtn=q('.hero .btn-primary');
+  primaryBtn.childNodes[0].textContent=$('f_btnPrimary').value+' ';
+  const secBtn=q('.hero .btn-secondary');secBtn.textContent=$('f_btnSecondary').value;
+
+  const kpis=doc.querySelectorAll('.kpi strong');
+  kpis[0].textContent=$('f_kpi1').value;kpis[1].textContent=$('f_kpi2').value;kpis[2].textContent=$('f_kpi3').value;
+
+  q('.about-text h2').textContent=$('f_aboutHeading').value;
+  const aboutPs=doc.querySelectorAll('.about-text p');
+  aboutPs[0].textContent=$('f_aboutP1').value;aboutPs[1].textContent=$('f_aboutP2').value;
+
+  q('.contact-box .kicker').textContent=$('f_contactKicker').value;
+  const cH2=q('.contact-box h2');
+  cH2.childNodes[0].textContent=$('f_contactPre').value+' ';
+  q('.contact-box h2 .gradient').textContent=$('f_contactHighlight').value;
+  q('.contact-box p').textContent=$('f_contactDesc').value;
+  const cBtns=doc.querySelectorAll('.contact-buttons a');
+  cBtns[0].setAttribute('href',$('f_whatsapp').value);
+  cBtns[1].setAttribute('href','mailto:'+$('f_email').value);
+  cBtns[2].setAttribute('href',$('f_linkedin').value);
+
+  const footerSpans=doc.querySelectorAll('.footer-inner span');
+  footerSpans[0].textContent=$('f_footerLeft').value;
+  footerSpans[1].textContent=$('f_footerRight').value;
+
+  document.querySelectorAll('[data-stat]').forEach(inp=>{
+    const el=doc.querySelectorAll('.stats .stat')[inp.dataset.stat];
+    if(inp.dataset.f==='val')el.querySelector('.counter').dataset.target=inp.value;
+    else el.querySelector('span').textContent=inp.value;
+  });
+
+  document.querySelectorAll('[data-proj]').forEach(inp=>{
+    const el=doc.querySelectorAll('.projects .project')[inp.dataset.proj];
+    if(inp.dataset.f==='title')el.querySelector('h3').textContent=inp.value;
+    if(inp.dataset.f==='desc')el.querySelector('.project-content > p').textContent=inp.value;
+    if(inp.dataset.f==='link')el.querySelector('.project-link').setAttribute('href',inp.value);
+    if(inp.dataset.f==='tags'){
+      const tagsWrap=el.querySelector('.tags');
+      tagsWrap.innerHTML='';
+      inp.value.split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>{
+        const span=doc.createElement('span');span.className='tag';span.textContent=t;tagsWrap.appendChild(span);
+      });
+    }
+  });
+
+  document.querySelectorAll('[data-skill]').forEach(inp=>{
+    const el=doc.querySelectorAll('.skills .skill')[inp.dataset.skill];
+    if(inp.dataset.f==='icon')el.querySelector('.skill-icon').textContent=inp.value;
+    if(inp.dataset.f==='title')el.querySelector('h3').textContent=inp.value;
+    if(inp.dataset.f==='desc')el.querySelector('p').textContent=inp.value;
+  });
+}
+
+$('saveBtn').addEventListener('click',async()=>{
+  status('جاري الحفظ...','loading');
+  try{
+    applyFormToDoc();
+    const html='<!DOCTYPE html>\n'+doc.documentElement.outerHTML;
+    const res=await fetch(apiUrl(),{
+      method:'PUT',
+      headers:{...headers(),'Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:'تحديث البورتفوليو عبر لوحة التحكم',
+        content:b64Encode(html),
+        sha:sha,
+        branch:$('cfgBranch').value.trim()
+      })
+    });
+    if(!res.ok){const t=await res.text();throw new Error(`${res.status}: ${t}`);}
+    const data=await res.json();
+    sha=data.content.sha;
+    status('تم الحفظ بنجاح ✓ التغييرات هتظهر على الموقع خلال ثواني','ok');
+    setTimeout(()=>$('status').style.display='none',4000);
+  }catch(e){status('فشل الحفظ: '+e.message,'err');}
+});
+</script>
+</body>
+</html>
