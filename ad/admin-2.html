@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم البورتفوليو</title>
+<style>
+:root{--bg:#04060a;--card:#0d131d;--line:rgba(255,255,255,.09);--text:#f7f9fc;--muted:#8e9aaa;--blue:#4f8cff;--green:#55df9a;--red:#ff5f6d}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px 80px}
+.wrap{max-width:760px;margin:auto}
+h1{font-size:22px;margin:0 0 6px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 26px}
+fieldset{border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px;background:var(--card)}
+legend{padding:0 8px;font-size:13px;font-weight:700;color:#7ba9ff}
+label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px}
+input,textarea{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:#0a0f18;color:var(--text);font-size:13px;font-family:inherit}
+textarea{resize:vertical;min-height:60px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+button{cursor:pointer;border:0;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:700;font-family:inherit}
+.btn-main{background:var(--blue);color:#fff;width:100%}
+.item{border:1px dashed var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.item h4{margin:0 0 8px;font-size:12px;color:#7ba9ff}
+#status{position:fixed;bottom:0;left:0;width:100%;padding:12px;text-align:center;font-size:13px;font-weight:600;display:none;z-index:999;white-space:pre-wrap;word-break:break-word}
+#status.ok{display:block;background:rgba(85,223,154,.15);color:var(--green);border-top:1px solid rgba(85,223,154,.3)}
+#status.err{display:block;background:rgba(255,95,109,.15);color:var(--red);border-top:1px solid rgba(255,95,109,.3)}
+#status.loading{display:block;background:rgba(79,140,255,.15);color:#7ba9ff;border-top:1px solid rgba(79,140,255,.3)}
+#editor{display:none}
+small.hint{display:block;color:#5c6577;font-size:11px;margin-top:4px}
+.top-actions{display:flex;gap:10px;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>لوحة تحكم البورتفوليو</h1>
+<p class="sub">تعديل مباشر على index.html في مستودعك على GitHub.</p>
+
+<fieldset>
+<legend>الاتصال بـ GitHub</legend>
+<div class="row">
+<div><label>اسم المستخدم (Owner)</label><input id="cfgOwner" placeholder="mahmoudmo159"></div>
+<div><label>اسم المستودع (Repo)</label><input id="cfgRepo" placeholder="portfolio"></div>
+</div>
+<div class="row">
+<div><label>اسم الملف</label><input id="cfgPath" value="index.html"></div>
+<div><label>الـ Branch</label><input id="cfgBranch" value="main"></div>
+</div>
+<label>Personal Access Token</label>
+<input id="cfgToken" type="password" placeholder="github_pat_xxxxxxxxxxxx">
+<small class="hint">التوكن بيتخزن في متصفحك بس (localStorage) ومش بيتبعت لحد غير GitHub.</small>
+<div class="top-actions" style="margin-top:16px">
+<button class="btn-main" id="loadBtn" style="flex:1">تحميل الملف</button>
+</div>
+</fieldset>
+
+<div id="editor">
+
+<fieldset><legend>عام</legend>
+<label>عنوان التاب (Title)</label><input id="f_title">
+<label>وصف الميتا</label><textarea id="f_metaDesc"></textarea>
+<label>اسم الشعار في القائمة العلوية</label><input id="f_logoText">
+<div class="row">
+<div><label>الاسم الأول (شاشة البداية)</label><input id="f_introFirst"></div>
+<div><label>الاسم الأخير (شاشة البداية)</label><input id="f_introLast"></div>
+</div>
+<label>تسمية شاشة البداية</label><input id="f_introLabel">
+</fieldset>
+
+<fieldset><legend>القسم الرئيسي (Hero)</legend>
+<label>نص الشارة العلوية (Badge)</label><input id="f_badgeText">
+<div class="row2">
+<div><label>بداية العنوان</label><input id="f_heroPre"></div>
+<div><label>كلمة مميزة 1</label><input id="f_heroWord1"></div>
+</div>
+<div class="row2">
+<div><label>وسط العنوان</label><input id="f_heroMid"></div>
+<div><label>كلمة مميزة 2</label><input id="f_heroWord2"></div>
+</div>
+<label>الفقرة تحت العنوان</label><textarea id="f_heroText"></textarea>
+<div class="row">
+<div><label>نص الزرار الأول</label><input id="f_btnPrimary"></div>
+<div><label>نص الزرار الثاني</label><input id="f_btnSecondary"></div>
+</div>
+<div class="row2">
+<div><label>KPI Revenue</label><input id="f_kpi1"></div>
+<div><label>KPI Orders</label><input id="f_kpi2"></div>
+<div><label>KPI Profit</label><input id="f_kpi3"></div>
+</div>
+</fieldset>
+
+<fieldset><legend>الإحصائيات</legend><div id="statsWrap"></div></fieldset>
+<fieldset><legend>المشاريع</legend><div id="projectsWrap"></div></fieldset>
+<fieldset><legend>المهارات</legend><div id="skillsWrap"></div></fieldset>
+
+<fieldset><legend>قسم About</legend>
+<label>العنوان</label><input id="f_aboutHeading">
+<label>فقرة 1</label><textarea id="f_aboutP1"></textarea>
+<label>فقرة 2</label><textarea id="f_aboutP2"></textarea>
+</fieldset>
+
+<fieldset><legend>قسم التواصل</legend>
+<label>Kicker</label><input id="f_contactKicker">
+<div class="row">
+<div><label>بداية العنوان</label><input id="f_contactPre"></div>
+<div><label>الكلمة المميزة</label><input id="f_contactHighlight"></div>
+</div>
+<label>الوصف</label><textarea id="f_contactDesc"></textarea>
+<label>رابط واتساب</label><input id="f_whatsapp">
+<label>الإيميل (بدون mailto:)</label><input id="f_email">
+<label>رابط LinkedIn</label><input id="f_linkedin">
+</fieldset>
+
+<fieldset><legend>الفوتر</legend>
+<label>النص الأيسر (حقوق النشر)</label><input id="f_footerLeft">
+<label>النص الأيمن</label><input id="f_footerRight">
+</fieldset>
+
+<button class="btn-main" id="saveBtn">حفظ التعديلات على GitHub</button>
+</div>
+</div>
+<div id="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CFG_KEYS=['cfgOwner','cfgRepo','cfgPath','cfgBranch','cfgToken'];
+CFG_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v)$(k).value=v;});
+if(!$('cfgPath').value)$('cfgPath').value='index.html';
+if(!$('cfgBranch').value)$('cfgBranch').value='main';
+
+let doc=null,sha=null;
+
+function status(msg,type){const s=$('status');s.textContent=msg;s.className=type;}
+
+function b64Decode(str){return decodeURIComponent(atob(str.replace(/\n/g,'')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));}
+function b64Encode(str){return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,(m,p)=>String.fromCharCode('0x'+p)));}
+
+function apiUrl(){return `https://api.github.com/repos/${$('cfgOwner').value.trim()}/${$('cfgRepo').value.trim()}/contents/${$('cfgPath').value.trim()}`;}
+function headers(){return{Authorization:`Bearer ${$('cfgToken').value.trim()}`,Accept:'application/vnd.github+json'};}
+
+// ---- safe helpers: never throw, just no-op / return '' when the element isn't there ----
+function el1(sel){return doc.querySelector(sel);}
+function elN(sel){return[...doc.querySelectorAll(sel)];}
+function getText(sel){const e=el1(sel);return e?e.textContent:'';}
+function setText(sel,val){const e=el1(sel);if(e)e.textContent=val;}
+function getAttr(sel,attr){const e=el1(sel);return e?(e.getAttribute(attr)||''):'';}
+function setAttr(sel,attr,val){const e=el1(sel);if(e)e.setAttribute(attr,val);}
+function getChildText(sel,idx){const e=el1(sel);return(e&&e.childNodes[idx])?e.childNodes[idx].textContent:'';}
+function setChildText(sel,idx,val){const e=el1(sel);if(e&&e.childNodes[idx])e.childNodes[idx].textContent=val;}
+function getNth(sel,idx,attr){const arr=elN(sel);const e=arr[idx];if(!e)return'';return attr?(e.getAttribute(attr)||''):e.textContent;}
+function setNth(sel,idx,val,attr){const arr=elN(sel);const e=arr[idx];if(!e)return;if(attr)e.setAttribute(attr,val);else e.textContent=val;}
+
+$('loadBtn').addEventListener('click',async()=>{
+  CFG_KEYS.forEach(k=>localStorage.setItem(k,$(k).value));
+  status('جاري تحميل الملف...','loading');
+  try{
+    const res=await fetch(`${apiUrl()}?ref=${$('cfgBranch').value.trim()}`,{headers:headers()});
+    if(!res.ok){const t=await res.text();throw new Error(`فشل الاتصال بـ GitHub (${res.status}): ${t.slice(0,200)}`);}
+    const data=await res.json();
+    sha=data.sha;
+    const html=b64Decode(data.content);
+    doc=new DOMParser().parseFromString(html,'text/html');
+    populateForm();
+    $('editor').style.display='block';
+    status('تم تحميل الملف بنجاح ✓','ok');
+    setTimeout(()=>$('status').style.display='none',2500);
+  }catch(e){
+    console.error(e);
+    status('فشل التحميل: '+e.message,'err');
+  }
+});
+
+function q(sel,idx=0){if(!doc)return null;const els=doc.querySelectorAll(sel);return els[idx]||null;}
+
+function populateForm(){
+  $('f_title').value=getText('title');
+  $('f_metaDesc').value=getAttr('meta[name="description"]','content');
+  $('f_logoText').value=getChildText('.logo',0);
+  $('f_introLabel').value=getText('.intro-label');
+  $('f_introFirst').value=getText('.intro-name .first');
+  $('f_introLast').value=getText('.intro-name .last');
+
+  const badge=el1('.badge');
+  $('f_badgeText').value=badge?badge.childNodes[badge.childNodes.length-1].textContent.trim():'';
+
+  $('f_heroPre').value=getChildText('.hero h1',0).trim();
+  $('f_heroWord1').value=getNth('.hero h1 .gradient',0);
+  $('f_heroMid').value=getChildText('.hero h1',2).trim();
+  $('f_heroWord2').value=getNth('.hero h1 .gradient',1);
+  $('f_heroText').value=getText('.hero-text');
+  $('f_btnPrimary').value=getText('.hero .btn-primary').trim();
+  $('f_btnSecondary').value=getText('.hero .btn-secondary').trim();
+
+  $('f_kpi1').value=getNth('.kpi strong',0);
+  $('f_kpi2').value=getNth('.kpi strong',1);
+  $('f_kpi3').value=getNth('.kpi strong',2);
+
+  $('f_aboutHeading').value=getText('.about-text h2');
+  $('f_aboutP1').value=getNth('.about-text p',0);
+  $('f_aboutP2').value=getNth('.about-text p',1);
+
+  $('f_contactKicker').value=getText('.contact-box .kicker');
+  $('f_contactPre').value=getChildText('.contact-box h2',0).trim();
+  $('f_contactHighlight').value=getText('.contact-box h2 .gradient');
+  $('f_contactDesc').value=getText('.contact-box p');
+
+  const cBtns=elN('.contact-buttons a');
+  $('f_whatsapp').value=cBtns[0]?(cBtns[0].getAttribute('href')||''):'';
+  $('f_email').value=cBtns[1]?(cBtns[1].getAttribute('href')||'').replace('mailto:',''):'';
+  $('f_linkedin').value=cBtns[2]?(cBtns[2].getAttribute('href')||''):'';
+
+  $('f_footerLeft').value=getNth('.footer-inner span',0);
+  $('f_footerRight').value=getNth('.footer-inner span',1);
+
+  renderStats();renderProjects();renderSkills();
+}
+
+function renderStats(){
+  const wrap=$('statsWrap');wrap.innerHTML='';
+  elN('.stats .stat').forEach((elm,i)=>{
+    const counter=elm.querySelector('.counter'),label=elm.querySelector('span');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h4>إحصائية ${i+1}</h4>
+    <div class="row"><div><label>الرقم</label><input data-stat="${i}" data-f="val" value="${counter?counter.dataset.target:''}"></div>
+    <div><label>الوصف</label><input data-stat="${i}" data-f="label" value="${label?label.textContent:''}"></div></div>`;
+    wrap.appendChild(div);
+  });
+}
+
+function renderProjects(){
+  const wrap=$('projectsWrap');wrap.innerHTML='';
+  elN('.projects .project').forEach((elm,i)=>{
+    const h3=elm.querySelector('h3'),p=elm.querySelector('.project-content p'),tags=[...elm.querySelectorAll('.tag')].map(t=>t.textContent).join(', '),link=elm.querySelector('.project-link');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h4>مشروع ${i+1}</h4>
+    <label>العنوان</label><input data-proj="${i}" data-f="title" value="${(h3?h3.textContent:'').replace(/"/g,'&quot;')}">
+    <label>الوصف</label><textarea data-proj="${i}" data-f="desc">${p?p.textContent:''}</textarea>
+    <label>الوسوم (مفصولة بفاصلة)</label><input data-proj="${i}" data-f="tags" value="${tags.replace(/"/g,'&quot;')}">
+    <label>رابط الداشبورد</label><input data-proj="${i}" data-f="link" value="${link?(link.getAttribute('href')||''):''}">`;
+    wrap.appendChild(div);
+  });
+}
+
+function renderSkills(){
+  const wrap=$('skillsWrap');wrap.innerHTML='';
+  elN('.skills .skill').forEach((elm,i)=>{
+    const icon=elm.querySelector('.skill-icon'),h3=elm.querySelector('h3'),p=elm.querySelector('p');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h4>مهارة ${i+1}</h4>
+    <div class="row2"><div><label>أيقونة</label><input data-skill="${i}" data-f="icon" value="${icon?icon.textContent:''}"></div>
+    <div style="grid-column:span 2"><label>العنوان</label><input data-skill="${i}" data-f="title" value="${(h3?h3.textContent:'').replace(/"/g,'&quot;')}"></div></div>
+    <label>الوصف</label><textarea data-skill="${i}" data-f="desc">${p?p.textContent:''}</textarea>`;
+    wrap.appendChild(div);
+  });
+}
+
+function applyFormToDoc(){
+  setText('title',$('f_title').value);
+  setAttr('meta[name="description"]','content',$('f_metaDesc').value);
+  setChildText('.logo',0,$('f_logoText').value);
+  setText('.intro-label',$('f_introLabel').value);
+  setText('.intro-name .first',$('f_introFirst').value);
+  setText('.intro-name .last',$('f_introLast').value);
+
+  const badge=el1('.badge');
+  if(badge)badge.childNodes[badge.childNodes.length-1].textContent=$('f_badgeText').value;
+
+  setChildText('.hero h1',0,$('f_heroPre').value+' ');
+  setNth('.hero h1 .gradient',0,$('f_heroWord1').value);
+  setChildText('.hero h1',2,' '+$('f_heroMid').value+' ');
+  setNth('.hero h1 .gradient',1,$('f_heroWord2').value);
+  setText('.hero-text',$('f_heroText').value);
+
+  const primaryBtn=el1('.hero .btn-primary');
+  if(primaryBtn&&primaryBtn.childNodes[0])primaryBtn.childNodes[0].textContent=$('f_btnPrimary').value+' ';
+  setText('.hero .btn-secondary',$('f_btnSecondary').value);
+
+  setNth('.kpi strong',0,$('f_kpi1').value);
+  setNth('.kpi strong',1,$('f_kpi2').value);
+  setNth('.kpi strong',2,$('f_kpi3').value);
+
+  setText('.about-text h2',$('f_aboutHeading').value);
+  setNth('.about-text p',0,$('f_aboutP1').value);
+  setNth('.about-text p',1,$('f_aboutP2').value);
+
+  setText('.contact-box .kicker',$('f_contactKicker').value);
+  setChildText('.contact-box h2',0,$('f_contactPre').value+' ');
+  setText('.contact-box h2 .gradient',$('f_contactHighlight').value);
+  setText('.contact-box p',$('f_contactDesc').value);
+
+  const cBtns=elN('.contact-buttons a');
+  if(cBtns[0])cBtns[0].setAttribute('href',$('f_whatsapp').value);
+  if(cBtns[1])cBtns[1].setAttribute('href','mailto:'+$('f_email').value);
+  if(cBtns[2])cBtns[2].setAttribute('href',$('f_linkedin').value);
+
+  setNth('.footer-inner span',0,$('f_footerLeft').value);
+  setNth('.footer-inner span',1,$('f_footerRight').value);
+
+  document.querySelectorAll('[data-stat]').forEach(inp=>{
+    const elm=elN('.stats .stat')[inp.dataset.stat];
+    if(!elm)return;
+    if(inp.dataset.f==='val'){const c=elm.querySelector('.counter');if(c)c.dataset.target=inp.value;}
+    else{const s=elm.querySelector('span');if(s)s.textContent=inp.value;}
+  });
+
+  document.querySelectorAll('[data-proj]').forEach(inp=>{
+    const elm=elN('.projects .project')[inp.dataset.proj];
+    if(!elm)return;
+    if(inp.dataset.f==='title'){const h=elm.querySelector('h3');if(h)h.textContent=inp.value;}
+    if(inp.dataset.f==='desc'){const p=elm.querySelector('.project-content p');if(p)p.textContent=inp.value;}
+    if(inp.dataset.f==='link'){const a=elm.querySelector('.project-link');if(a)a.setAttribute('href',inp.value);}
+    if(inp.dataset.f==='tags'){
+      const tagsWrap=elm.querySelector('.tags');
+      if(tagsWrap){
+        tagsWrap.innerHTML='';
+        inp.value.split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>{
+          const span=doc.createElement('span');span.className='tag';span.textContent=t;tagsWrap.appendChild(span);
+        });
+      }
+    }
+  });
+
+  document.querySelectorAll('[data-skill]').forEach(inp=>{
+    const elm=elN('.skills .skill')[inp.dataset.skill];
+    if(!elm)return;
+    if(inp.dataset.f==='icon'){const i=elm.querySelector('.skill-icon');if(i)i.textContent=inp.value;}
+    if(inp.dataset.f==='title'){const h=elm.querySelector('h3');if(h)h.textContent=inp.value;}
+    if(inp.dataset.f==='desc'){const p=elm.querySelector('p');if(p)p.textContent=inp.value;}
+  });
+}
+
+$('saveBtn').addEventListener('click',async()=>{
+  status('جاري الحفظ...','loading');
+  try{
+    applyFormToDoc();
+    const html='<!DOCTYPE html>\n'+doc.documentElement.outerHTML;
+    const res=await fetch(apiUrl(),{
+      method:'PUT',
+      headers:{...headers(),'Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:'تحديث البورتفوليو عبر لوحة التحكم',
+        content:b64Encode(html),
+        sha:sha,
+        branch:$('cfgBranch').value.trim()
+      })
+    });
+    if(!res.ok){const t=await res.text();throw new Error(`فشل الحفظ (${res.status}): ${t.slice(0,200)}`);}
+    const data=await res.json();
+    sha=data.content.sha;
+    status('تم الحفظ بنجاح ✓ التغييرات هتظهر على الموقع خلال ثواني','ok');
+    setTimeout(()=>$('status').style.display='none',4000);
+  }catch(e){
+    console.error(e);
+    status('فشل الحفظ: '+e.message,'err');
+  }
+});
+</script>
+</body>
+</html>
