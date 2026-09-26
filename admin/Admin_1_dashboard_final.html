@@ -1,0 +1,2862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>لوحة تحكم البورتفوليو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070c; --bg2:#080b12; --card:#0d1420; --card2:#0a0f18; --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.14); --text:#f2f5fa; --muted:#8a95a8; --muted2:#5c6577;
+  --blue:#4f8cff; --blue-dim:rgba(79,140,255,.14); --cyan:#4fd8ff; --green:#55df9a;
+  --green-dim:rgba(85,223,154,.14); --red:#ff5f6d; --red-dim:rgba(255,95,109,.14);
+  --amber:#ffb454; --amber-dim:rgba(255,180,84,.14); --radius:14px; --radius-sm:9px;
+  --shadow:0 8px 30px rgba(0,0,0,.35);
+  --font:"IBM Plex Sans Arabic","IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+::selection{background:var(--blue);color:#fff}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
+a{color:inherit}
+button{font-family:inherit}
+.icon{width:1em;height:1em;display:inline-block;vertical-align:-.15em;flex-shrink:0}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ============ INTRO ============ */
+#intro{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 40%,#0c1420 0%,#05070c 70%);display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;transition:opacity .6s ease,visibility .6s}
+#intro.hide{opacity:0;visibility:hidden;pointer-events:none}
+.intro-grid{position:absolute;inset:-50%;background-image:linear-gradient(rgba(79,140,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(79,140,255,.07) 1px,transparent 1px);background-size:46px 46px;animation:gridMove 8s linear infinite;transform:perspective(600px) rotateX(55deg);opacity:.6}
+@keyframes gridMove{from{background-position:0 0}to{background-position:46px 92px}}
+.intro-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scan 2.4s ease-in-out infinite;opacity:.7}
+@keyframes scan{0%{top:20%;opacity:0}50%{opacity:.9}100%{top:80%;opacity:0}}
+.intro-content{position:relative;text-align:center;z-index:2}
+.intro-title{font-size:clamp(40px,12vw,72px);font-weight:800;letter-spacing:8px;margin:0;filter:blur(18px);opacity:0;background:linear-gradient(135deg,#fff,#9fc1ff);-webkit-background-clip:text;background-clip:text;color:transparent;animation:introReveal 1s cubic-bezier(.2,.8,.2,1) .15s forwards;text-shadow:0 0 60px rgba(79,140,255,.5)}
+.intro-sub{margin:14px 0 0;font-size:12px;letter-spacing:5px;color:var(--muted);opacity:0;animation:introFade .8s ease .7s forwards}
+@keyframes introReveal{to{filter:blur(0);opacity:1}}
+@keyframes introFade{to{opacity:1}}
+.intro-bar{width:120px;height:2px;background:rgba(255,255,255,.08);margin:26px auto 0;border-radius:2px;overflow:hidden;opacity:0;animation:introFade .5s ease .9s forwards}
+.intro-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));animation:introBar 1.1s ease 1s forwards}
+@keyframes introBar{to{width:100%}}
+@media(prefers-reduced-motion:reduce){
+  .intro-grid,.intro-scan{animation:none}
+  .intro-title{filter:blur(0);opacity:1;animation:none}
+  .intro-sub,.intro-bar{opacity:1;animation:none}
+  .intro-bar span{width:100%;animation:none}
+}
+
+/* ============ LAYOUT ============ */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.show{display:flex}
+.app-body{display:flex;flex:1;min-height:0}
+
+/* ---- Global top header (logo / lang / account) ---- */
+.app-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:40;flex-wrap:wrap}
+.app-header-brand{display:flex;align-items:center;gap:11px}
+.app-header-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#04101f;flex-shrink:0;box-shadow:0 4px 14px rgba(79,140,255,.35);letter-spacing:0}
+.app-header-brand h1{font-size:15.5px;margin:0}
+.app-header-brand small{display:block;color:var(--muted2);font-size:10.5px;margin-top:1px}
+.app-header-right{display:flex;align-items:center;gap:12px}
+.app-header-account{display:flex;align-items:center;gap:9px}
+.app-header-account .avatar{width:32px;height:32px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted)}
+.app-header-account .who b{display:block;font-size:12px;line-height:1.3}
+.app-header-account .who small{color:var(--muted);font-size:10.5px}
+
+.sidebar{width:230px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--line);padding:20px 14px;position:sticky;top:61px;height:calc(100vh - 61px);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 22px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.brand-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+.brand b{font-size:14px}
+.brand small{display:block;color:var(--muted2);font-size:10.5px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;margin-bottom:2px;transition:.15s;border:1px solid transparent}
+.nav-item .ic{font-size:15px;width:18px;text-align:center}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{background:var(--blue-dim);color:#a9c7ff;border-color:rgba(79,140,255,.25)}
+
+.main{flex:1;min-width:0;padding:26px 26px 100px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.topbar h1{font-size:19px;margin:0}
+.topbar .sub{color:var(--muted);font-size:12px;margin:3px 0 0}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.section-page{display:none}
+.section-page.active{display:block;animation:pageIn .25s ease}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ============ COMPONENTS ============ */
+.card{border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(180deg,rgba(255,255,255,.025),transparent),var(--card);padding:18px;box-shadow:var(--shadow)}
+.card+.card{margin-top:14px}
+.card h2{font-size:14px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.h2-ic{display:inline-flex;color:var(--blue)}
+.warn-box .h2-ic{color:var(--amber);flex-shrink:0}
+.warn-box{display:flex;align-items:flex-start;gap:8px}
+.btn-ic{display:inline-flex;vertical-align:-3px}
+.card .hint{color:var(--muted);font-size:11.5px;margin:0 0 14px}
+
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:16px;position:relative;overflow:hidden}
+.stat-card .k{font-size:24px;font-weight:800}
+.stat-card .l{color:var(--muted);font-size:11.5px;margin-top:2px}
+.stat-card .glow{position:absolute;top:-30px;left:-30px;width:80px;height:80px;background:var(--blue);filter:blur(40px);opacity:.25;border-radius:50%}
+.stat-card.ok .glow{background:var(--green)}
+.stat-card.err .glow{background:var(--red)}
+
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.qa{border:1px solid var(--line);background:var(--card2);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--text);transition:.15s}
+.qa:hover{border-color:var(--blue);background:var(--blue-dim);transform:translateY(-1px)}
+.qa .qi{font-size:20px;display:block;margin-bottom:6px}
+
+.activity-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.activity-row:last-child{border-bottom:0}
+.activity-row span:first-child{color:var(--muted)}
+.badge-status{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:99px}
+.badge-status.connected{background:var(--green-dim);color:var(--green)}
+.badge-status.disconnected{background:var(--red-dim);color:var(--red)}
+.badge-status.draft{background:var(--amber-dim);color:var(--amber)}
+.badge-status .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+label{display:block;font-size:11.5px;color:var(--muted);margin:12px 0 5px;font-weight:600}
+input,textarea,select{width:100%;padding:11px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:13.5px;font-family:inherit;transition:.15s}
+input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+input[type=color]{padding:4px;height:42px;cursor:pointer}
+input[type=file]{padding:9px;font-size:12px}
+textarea{resize:vertical;min-height:64px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:640px){.row,.row3{grid-template-columns:1fr}}
+
+.pwrap{position:relative}
+.pwrap input{padding-left:42px}
+.pwrap .eye{position:absolute;left:6px;top:6px;background:none;border:0;color:var(--muted);padding:8px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px}
+.pwrap .eye:hover{color:var(--text);background:rgba(255,255,255,.05)}
+
+button{cursor:pointer;border:0;border-radius:var(--radius-sm);font-weight:700}
+.btn-main{background:linear-gradient(135deg,var(--blue),#3f6fe0);color:#fff;padding:12px 18px;font-size:13.5px;box-shadow:0 4px 16px rgba(79,140,255,.3)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid var(--line2);color:var(--text);padding:11px 16px;font-size:13px}
+.btn-ghost:hover{border-color:var(--blue)}
+.btn-danger-outline{background:var(--red-dim);border:1px solid rgba(255,95,109,.3);color:var(--red);padding:11px 16px;font-size:13px}
+.btn-add{background:var(--blue-dim);border:1px dashed rgba(79,140,255,.4);color:#7ba9ff;width:100%;padding:11px;margin-top:10px;font-size:13px}
+.btn-icon{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text);width:30px;height:30px;border-radius:8px;font-size:12px;flex-shrink:0}
+.btn-icon:hover{border-color:var(--blue)}
+.btn-del{background:var(--red-dim);border:1px solid rgba(255,95,109,.3);color:var(--red);width:30px;height:30px;border-radius:8px;font-size:13px;flex-shrink:0}
+.btn-sm{padding:7px 11px;font-size:11.5px}
+.full{width:100%}
+
+.item{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:10px;background:rgba(255,255,255,.02)}
+.item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;gap:6px}
+.item-head h4{margin:0;font-size:12px;color:#7ba9ff;flex:1;display:flex;align-items:center;gap:8px}
+.item-actions{display:flex;gap:5px}
+.item.collapsed .item-body{display:none}
+.chev{transition:.2s;color:var(--muted);font-size:16px;cursor:pointer}
+.item.collapsed .chev{transform:rotate(-90deg)}
+
+.search-bar{position:relative;margin-bottom:14px}
+.search-bar input{padding-right:36px}
+.search-bar .si{position:absolute;right:12px;top:12px;color:var(--muted);font-size:13px}
+.filter-row{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card2);font-size:11.5px;color:var(--muted);cursor:pointer}
+.chip.active{background:var(--blue-dim);border-color:var(--blue);color:#a9c7ff}
+
+img.thumb{width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;margin-bottom:8px;background:#111}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.img-card{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--card2)}
+.img-card .path{font-size:10px;color:var(--muted);word-break:break-all;margin-bottom:6px}
+.img-card .img-actions{display:flex;gap:5px}
+
+.empty{text-align:center;padding:34px 14px;color:var(--muted)}
+.empty .ei{font-size:30px;display:block;margin-bottom:10px;opacity:.6}
+.empty b{color:var(--text);display:block;margin-bottom:4px;font-size:13px}
+.empty small{font-size:11.5px}
+
+small.hint{display:block;color:var(--muted2);font-size:11px;margin-top:4px}
+.warn-box{background:var(--amber-dim);border:1px solid rgba(255,180,84,.3);color:var(--amber);border-radius:10px;padding:10px 12px;font-size:12px;margin-top:10px}
+
+#previewFrame{width:100%;height:480px;border:1px solid var(--line);border-radius:10px;margin-top:10px;background:#fff;transition:width .25s,margin .25s}
+.preview-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.preview-toolbar .spacer{flex:1}
+
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{background:transparent;color:var(--muted);padding:8px 13px;font-size:12px;border-radius:0}
+.seg button.active{background:var(--blue-dim);color:#a9c7ff}
+
+.switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--card2);border:1px solid var(--line);transition:.2s;border-radius:24px}
+.slider:before{position:absolute;content:"";height:16px;width:16px;right:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s}
+input:checked+.slider{background:var(--blue-dim);border-color:var(--blue)}
+input:checked+.slider:before{transform:translateX(-18px);background:var(--blue)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}
+.setting-row:last-child{border-bottom:0}
+.setting-row div b{display:block;font-size:13px;margin-bottom:2px}
+.setting-row div small{color:var(--muted);font-size:11.5px}
+
+
+const dashPublish=$('dashPublish');
+if(dashPublish) dashPublish.addEventListener('click',()=>$('btnPublishTop')?.click());
+const headerPublishButton=$('headerPublishButton');
+if(headerPublishButton) headerPublishButton.addEventListener('click',()=>$('btnPublishTop')?.click());
+const globalSearch=$('globalSearch');
+if(globalSearch) globalSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.trim().toLowerCase(); if(!q)return; const hit=NAV.find(n=>(n.label+' '+n.sub).toLowerCase().includes(q)); if(hit)goPage(hit.id); else toast(currentLang==='ar'?'مفيش قسم مطابق للبحث':'No matching section found','info');}});
+
+/* ============ TOASTS ============ */
+#toastWrap{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);z-index:6000;display:flex;flex-direction:column;gap:8px;width:min(92vw,380px);pointer-events:none}
+@media(min-width:900px){#toastWrap{bottom:24px}}
+.toast{pointer-events:auto;padding:13px 15px;border-radius:11px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:9px;box-shadow:0 6px 22px rgba(0,0,0,.4);animation:toastIn .25s ease;border:1px solid}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast.ok{background:#0e1f18;border-color:rgba(85,223,154,.3);color:var(--green)}
+.toast.err{background:#241012;border-color:rgba(255,95,109,.3);color:var(--red)}
+.toast.warn{background:#241a0d;border-color:rgba(255,180,84,.3);color:var(--amber)}
+.toast.info{background:#0d1a24;border-color:rgba(79,140,255,.3);color:#7ba9ff}
+.toast .close{margin-right:auto;background:none;border:0;color:inherit;opacity:.6;cursor:pointer;font-size:13px}
+
+/* ============ MODAL ============ */
+#modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:7000;display:none;align-items:center;justify-content:center;padding:20px}
+#modalOverlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--line2);border-radius:16px;padding:22px;max-width:380px;width:100%;box-shadow:var(--shadow)}
+.modal h3{margin:0 0 8px;font-size:15px}
+.modal p{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.6}
+.modal .mbtns{display:flex;gap:10px}
+.modal .mbtns button{flex:1}
+
+/* ============ MOBILE NAV ============ */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--line);z-index:5000;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.mobile-nav-inner{display:grid;grid-template-columns:repeat(5,1fr)}
+.mnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;color:var(--muted);font-size:9.5px;font-weight:700;border-radius:10px}
+.mnav-item.active{color:#7ba9ff;background:var(--blue-dim)}
+.mnav-item .ic{font-size:17px}
+#moreSheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg2);border-top:1px solid var(--line2);border-radius:18px 18px 0 0;z-index:5500;padding:10px 14px calc(14px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .25s ease;max-height:70vh;overflow-y:auto}
+#moreSheet.show{transform:translateY(0)}
+.sheet-handle{width:38px;height:4px;background:var(--line2);border-radius:4px;margin:4px auto 14px}
+#sheetBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5400;display:none}
+#sheetBackdrop.show{display:block}
+
+@media(max-width:899px){
+  .sidebar{display:none}
+  .main{padding:18px 14px 90px}
+  .mobile-nav{display:block}
+}
+
+#status{position:fixed;bottom:0;left:0;width:100%;padding:10px;text-align:center;font-size:12px;font-weight:600;display:none;z-index:4000}
+
+.skel{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 37%,rgba(255,255,255,.04) 63%);background-size:400% 100%;animation:skel 1.4s ease infinite;border-radius:8px}
+@keyframes skel{0%{background-position:100% 0}100%{background-position:0 0}}
+.skel-line{height:12px;margin-bottom:8px}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.dirty-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-left:5px;box-shadow:0 0 6px var(--amber)}
+
+/* ============ LOGIN SCREEN ============ */
+#loginScreen{position:fixed;inset:0;z-index:10000;background:radial-gradient(ellipse at 50% 30%,#0c1420 0%,#05070c 70%);display:flex;align-items:center;justify-content:center;padding:20px}
+#loginScreen.hide{display:none}
+.login-card{width:100%;max-width:380px;border:1px solid var(--line2);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 40%),var(--card);padding:36px 32px 30px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.02) inset}
+.login-brand{text-align:center;margin-bottom:26px}
+.login-brand .lmark{width:48px;height:48px;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:inline-flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#04101f;box-shadow:0 6px 20px rgba(79,140,255,.4);margin-bottom:16px}
+.login-brand h1{font-size:18px;margin:0 0 5px;font-weight:700;letter-spacing:.2px}
+.login-brand p{margin:0;color:var(--muted);font-size:11.5px;letter-spacing:.3px}
+.login-card.shake{animation:loginShake .4s ease}
+@keyframes loginShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.login-error{background:var(--red-dim);border:1px solid rgba(255,95,109,.3);color:var(--red);border-radius:10px;padding:10px 12px;font-size:12.5px;margin-top:14px;display:none}
+.login-error.show{display:block}
+.login-lang{display:flex;justify-content:center;margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+
+/* ============ LANGUAGE SWITCH ============ */
+.lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--card2)}
+.lang-switch button{background:transparent;color:var(--muted);padding:7px 13px;font-size:11.5px;border-radius:0}
+.lang-switch button.active{background:var(--blue-dim);color:#a9c7ff}
+
+/* ============ AUDIT LOG ============ */
+.audit-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:11.5px}
+.audit-row:last-child{border-bottom:0}
+.audit-row .a-type{color:var(--text);font-weight:700}
+.audit-row .a-time{color:var(--muted2);flex-shrink:0;white-space:nowrap}
+
+/* ============ LTR (English) OVERRIDES ============ */
+html[dir="ltr"] .sidebar{border-left:0;border-right:1px solid var(--line)}
+html[dir="ltr"] .pwrap input{padding-left:12px;padding-right:42px}
+html[dir="ltr"] .pwrap .eye{left:auto;right:6px}
+html[dir="ltr"] .search-bar input{padding-right:12px;padding-left:36px}
+html[dir="ltr"] .search-bar .si{right:auto;left:12px}
+html[dir="ltr"] .toast .close{margin-right:0;margin-left:auto}
+html[dir="ltr"] .dirty-dot{margin-left:0;margin-right:5px}
+
+@media(max-width:420px){
+  .login-card{padding:24px 18px}
+}
+
+.case-editor{margin-top:16px;padding:16px;border:1px solid rgba(79,140,255,.22);border-radius:14px;background:rgba(79,140,255,.035)}
+.case-editor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.case-editor-head b{font-size:13px;color:#9fc0ff}
+.case-editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.case-editor-grid .full{grid-column:1/-1}
+.case-editor textarea{min-height:82px;resize:vertical}
+.case-editor .hint-box{padding:9px 10px;border-radius:9px;background:rgba(255,255,255,.035);color:var(--muted);font-size:10px;line-height:1.7}
+@media(max-width:700px){.case-editor-grid{grid-template-columns:1fr}.case-editor-grid .full{grid-column:auto}}
+
+/* ============ PROJECTS: LIST VIEW ============ */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:16px}
+.proj-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);overflow:hidden;cursor:pointer;transition:.15s;display:flex;flex-direction:column}
+.proj-card:hover{border-color:rgba(79,140,255,.4);transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.35)}
+.proj-card-thumb{height:110px;background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size:26px;overflow:hidden}
+.proj-card-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.proj-card-body{padding:13px 14px;flex:1;display:flex;flex-direction:column;gap:6px}
+.proj-card-body h3{margin:0;font-size:13.5px}
+.proj-card-body p{margin:0;color:var(--muted);font-size:11.5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.proj-card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.proj-card-tags .tag{font-size:10px;padding:3px 8px;border-radius:99px;background:var(--blue-dim);color:#a9c7ff}
+.proj-card-actions{display:flex;gap:5px;padding:0 14px 13px;justify-content:flex-end}
+
+/* ============ PROJECTS: DETAIL VIEW ============ */
+.crumb{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;margin-bottom:14px}
+.crumb:hover{color:var(--text)}
+.detail-header{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between}
+.detail-header-left{display:flex;gap:14px;flex:1;min-width:240px}
+.detail-header-thumb{width:60px;height:60px;border-radius:12px;background:var(--card2);border:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+.detail-header-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.detail-header-meta h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.detail-header-meta p{margin:0 0 8px;color:var(--muted);font-size:12.5px}
+.detail-header-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 16px;overflow-x:auto}
+.tabbar button{background:transparent;color:var(--muted);padding:10px 6px;font-size:12.5px;font-weight:700;border-bottom:2px solid transparent;white-space:nowrap;margin-left:18px}
+html[dir="ltr"] .tabbar button{margin-left:0;margin-right:18px}
+.tabbar button:first-child{margin-left:0;margin-right:0}
+.tabbar button.active{color:#a9c7ff;border-bottom-color:var(--blue)}
+
+.detail-layout{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+@media(max-width:980px){.detail-layout{grid-template-columns:1fr}}
+.detail-layout .lp-col{position:sticky;top:calc(61px + 14px)}
+
+.subnav2{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card2);padding:8px}
+.subnav2 button{background:transparent;color:var(--muted);text-align:right;padding:9px 11px;font-size:12.5px;font-weight:600;border-radius:8px}
+html[dir="ltr"] .subnav2 button{text-align:left}
+.subnav2 button.active{background:var(--blue-dim);color:#a9c7ff}
+.subnav-layout{display:grid;grid-template-columns:150px 1fr;gap:14px}
+@media(max-width:640px){.subnav-layout{grid-template-columns:1fr}}
+.subpanel{display:none}
+.subpanel.active{display:block}
+
+/* ---- Live preview card ---- */
+.lp-frame{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#05070c}
+.lp-hero{padding:16px;border-bottom:1px solid var(--line)}
+.lp-back{color:var(--muted);font-size:11px;margin:0 0 10px}
+.lp-hero-row{display:flex;gap:12px;align-items:flex-start}
+.lp-thumb{width:46px;height:46px;border-radius:9px;background:var(--card2);flex-shrink:0;overflow:hidden}
+.lp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.lp-hero h3{margin:0 0 3px;font-size:14px}
+.lp-hero .lp-sub{color:var(--muted);font-size:11px;margin:0 0 8px}
+.lp-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.lp-badges .tag{font-size:9.5px;padding:2px 7px;border-radius:99px;background:var(--blue-dim);color:#a9c7ff}
+.lp-desc{font-size:11.5px;color:var(--muted);line-height:1.6;margin:8px 0}
+.lp-btns{display:flex;gap:8px;margin-top:8px}
+.lp-btns .b1{background:var(--blue);color:#fff;font-size:11px;padding:7px 12px;border-radius:8px;font-weight:700}
+.lp-btns .b2{background:var(--card2);border:1px solid var(--line2);color:var(--text);font-size:11px;padding:7px 12px;border-radius:8px;font-weight:700}
+.lp-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.lp-stat{background:#05070c;padding:10px;text-align:center}
+.lp-stat b{display:block;font-size:13px}
+.lp-stat small{color:var(--muted);font-size:9.5px}
+.lp-section{padding:14px 16px;border-bottom:1px solid var(--line)}
+.lp-section:last-child{border-bottom:0}
+.lp-section h4{margin:0 0 6px;font-size:11.5px;color:#9fc0ff;display:flex;align-items:center;gap:6px}
+.lp-section p{margin:0;font-size:11px;color:var(--muted);line-height:1.6}
+.lp-section ul{margin:6px 0 0;padding:0 16px 0 0;font-size:11px;color:var(--muted);line-height:1.8}
+html[dir="ltr"] .lp-section ul{padding:0 0 0 16px}
+.lp-results{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px}
+.lp-result{border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center;background:var(--card2)}
+.lp-result b{display:block;font-size:14px;color:var(--green)}
+.lp-result small{color:var(--muted);font-size:9.5px}
+.lp-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.lp-chips span{font-size:10px;padding:4px 9px;border-radius:8px;background:var(--card2);border:1px solid var(--line)}
+
+/* =========================================================
+   FINTECH / UNIVERSE-INSPIRED VISUAL REFRESH
+   Keeps the existing admin functionality, changes presentation only.
+   ========================================================= */
+:root{
+  --bg:#f7f7f5;
+  --bg2:#ffffff;
+  --card:#ffffff;
+  --card2:#fbfbfa;
+  --line:#e8e8e4;
+  --line2:#d7d7d1;
+  --text:#111111;
+  --muted:#777771;
+  --muted2:#9b9b94;
+  --blue:#111111;
+  --blue-dim:#f1f1ee;
+  --cyan:#44e2a0;
+  --green:#34d399;
+  --green-dim:#e9fbf3;
+  --red:#ef4444;
+  --red-dim:#fff0f0;
+  --amber:#c58a2a;
+  --amber-dim:#fff7e7;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 8px 28px rgba(17,17,17,.055);
+  --font:"IBM Plex Sans Arabic","IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;
+}
+html,body{background:var(--bg);color:var(--text)}
+body{font-size:14px}
+.app-header{
+  height:76px;padding:0 28px;border-bottom:1px solid #e9e9e5;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:40;flex-wrap:nowrap;gap:24px;
+  direction:ltr;
+}
+.app-header-brand{gap:10px;min-width:205px}
+.app-header-logo{
+  width:34px;height:34px;border-radius:50%;background:#111;color:#fff;
+  box-shadow:none;font-size:14px;letter-spacing:-.5px;
+}
+.app-header-brand h1{font-size:16px;color:#111}
+.app-header-brand small{color:#999;font-size:10px;letter-spacing:.2px}
+.header-search{
+  flex:1;max-width:620px;height:42px;border:1px solid #e6e6e2;border-radius:12px;
+  background:#fafaf8;display:flex;align-items:center;gap:8px;padding:0 13px;
+  direction:ltr;
+}
+.header-search span{font-size:23px;line-height:1;color:#8d8d86;transform:rotate(-20deg)}
+.header-search input{
+  border:0!important;background:transparent!important;padding:0!important;
+  height:100%;outline:0!important;color:#222;font-size:12.5px;box-shadow:none!important;
+  direction:rtl;
+}
+.header-search input::placeholder{color:#a2a29b}
+.app-header-right{gap:12px;direction:ltr}
+.header-publish{
+  background:#111;color:#fff;border-radius:10px;padding:11px 16px;font-size:12px;
+  font-weight:700;box-shadow:none;white-space:nowrap;
+}
+.header-publish:hover{background:#252525}
+.lang-switch{border:1px solid #e3e3df;background:#fafaf8}
+.lang-switch button{color:#777;padding:6px 9px}
+.lang-switch button.active{background:#111;color:#fff}
+.app-header-account{direction:ltr}
+.app-header-account .avatar{
+  width:34px;height:34px;background:#f1f1ee;border:1px solid #deded8;color:#555
+}
+.app-header-account .who{text-align:left}
+.app-header-account .who b{color:#161616}
+.app-header-account .who small{color:#999}
+
+.app-body{direction:ltr}
+.sidebar{
+  width:238px;background:#fff;border:0;border-right:1px solid #e8e8e4;
+  padding:24px 16px;position:sticky;top:76px;height:calc(100vh - 76px);
+  direction:rtl;box-shadow:8px 0 24px rgba(0,0,0,.015);
+}
+.brand{padding:4px 10px 22px;margin-bottom:18px;border-bottom:1px solid #ededE9}
+.brand-dot{width:8px;height:8px;background:#40df9a;box-shadow:0 0 8px rgba(64,223,154,.4)}
+.brand b{font-size:14px;color:#161616}
+.brand small{color:#a0a09a}
+.nav-item{
+  color:#777770;border:0;border-radius:11px;padding:11px 12px;
+  margin-bottom:4px;font-size:12.5px;transition:.16s;
+}
+.nav-item .ic{width:20px;color:#9a9a93;font-size:13px}
+.nav-item:hover{background:#f5f5f2;color:#111}
+.nav-item.active{background:#f1f1ee;color:#111;border:0}
+.nav-item.active .ic{color:#111}
+
+.main{
+  direction:rtl;min-width:0;padding:30px 34px 90px;
+  background:#f7f7f5;
+}
+.topbar{margin-bottom:24px;align-items:flex-end}
+.topbar h1{font-size:25px;letter-spacing:-.5px;color:#111}
+.topbar .sub{font-size:11.5px;color:#92928b}
+.top-actions{gap:7px}
+.btn-main{
+  background:#111;color:#fff;border:0;padding:11px 16px;font-size:12px;
+  box-shadow:none;border-radius:10px
+}
+.btn-main:hover{background:#292929}
+.btn-ghost{
+  background:#fff;border:1px solid #deded9;color:#222;padding:10px 14px;
+  box-shadow:none;border-radius:10px
+}
+.btn-ghost:hover{border-color:#bcbcb5;background:#fafaf8}
+.btn-danger-outline{background:#fff;border:1px solid #ead8d8;color:#d33;padding:10px 14px}
+.card,.stat-card{
+  border:1px solid #e8e8e4;background:#fff;box-shadow:0 7px 25px rgba(17,17,17,.035);
+}
+.card{padding:20px;border-radius:16px}
+.card h2{font-size:13.5px;color:#151515}
+.card .hint{color:#96968f}
+.grid-cards{
+  grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin-bottom:16px
+}
+.stat-card{
+  min-height:112px;padding:18px;border-radius:16px;overflow:hidden
+}
+.stat-card .k{font-size:28px;letter-spacing:-.8px;color:#111}
+.stat-card .l{color:#92928c;font-size:11px}
+.stat-card .glow{top:auto;bottom:-30px;left:-15px;width:85px;height:85px;background:#b7f5db;filter:blur(35px);opacity:.38}
+.stat-card.ok .glow{background:#7be6b7}
+.stat-card.err .glow{background:#ffc6c6}
+
+.quick-actions{grid-template-columns:repeat(3,1fr);gap:9px}
+.qa{
+  border:1px solid #e9e9e4;background:#fafaf8;color:#222;border-radius:12px;
+  padding:14px 10px;font-size:11.5px
+}
+.qa:hover{border-color:#cfcfc8;background:#f3f3ef;transform:none}
+.qa .qi{font-size:18px;color:#111}
+
+.activity-row{padding:11px 0;border-bottom:1px solid #eeeeea;color:#333}
+.activity-row span:first-child{color:#8d8d86}
+.badge-status.connected{background:#eafaf2;color:#1f9d67}
+.badge-status.disconnected{background:#fff0f0;color:#d64545}
+.badge-status.draft{background:#fff6e7;color:#bd7a1c}
+
+input,textarea,select{
+  background:#fff;color:#171717;border:1px solid #deded9;border-radius:10px;
+}
+input:focus,textarea:focus,select:focus{border-color:#111;box-shadow:0 0 0 3px rgba(17,17,17,.06)}
+label{color:#777770}
+.item{background:#fafaf8;border-color:#e8e8e4}
+.item-head h4{color:#222}
+.search-bar input{background:#fff}
+.chip{background:#fff;border-color:#deded9;color:#777}
+.chip.active{background:#111;border-color:#111;color:#fff}
+.btn-add{background:#f6f6f3;border-color:#d7d7d0;color:#333}
+.btn-add:hover{background:#eeeeea}
+.warn-box{background:#fff8e9;border-color:#f0dfb9;color:#a46c19}
+.preview-toolbar{background:#fff}
+.seg{border-color:#deded9;background:#fafaf8}
+.seg button.active{background:#111;color:#fff}
+#previewFrame{background:#fff;border-color:#ddd}
+
+.login-screen{}
+#loginScreen{
+  background:#f7f7f5;
+}
+.login-card{
+  border:1px solid #e4e4df;background:#fff;border-radius:20px;
+  box-shadow:0 20px 60px rgba(17,17,17,.08)
+}
+.login-brand .lmark{background:#111;color:#fff;box-shadow:none}
+.login-brand p{color:#96968f}
+.login-lang{border-color:#ededE8}
+#intro{
+  background:#f7f7f5;
+}
+.intro-grid{background-image:linear-gradient(rgba(17,17,17,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(17,17,17,.035) 1px,transparent 1px)}
+.intro-scan{background:linear-gradient(90deg,transparent,#111,transparent)}
+.intro-title{background:linear-gradient(135deg,#111,#777);-webkit-background-clip:text;background-clip:text;text-shadow:none}
+.intro-sub{color:#888}
+.intro-bar{background:#deded8}.intro-bar span{background:#111}
+
+.mobile-nav{background:#fff;border-top:1px solid #e5e5e0}
+.mnav-item{color:#999}
+.mnav-item.active{color:#111;background:#f1f1ee}
+#moreSheet{background:#fff;border-color:#deded9}
+#sheetBackdrop{background:rgba(0,0,0,.25)}
+
+@media(max-width:1100px){
+  .app-header{padding:0 18px;gap:12px}
+  .app-header-brand{min-width:170px}
+  .header-search{max-width:none}
+  .main{padding:24px 20px 90px}
+}
+@media(max-width:899px){
+  .app-header{height:64px;padding:0 12px}
+  .app-header-brand{min-width:auto}
+  .app-header-brand h1{font-size:14px}
+  .app-header-brand small{display:none}
+  .header-search{display:none}
+  .header-publish{padding:9px 11px;font-size:10.5px}
+  .app-header-account .who{display:none}
+  .app-header-account .avatar{width:32px;height:32px}
+  .sidebar{display:none}
+  .main{padding:18px 13px 92px}
+  .topbar{align-items:flex-start}
+  .topbar h1{font-size:21px}
+  .grid-cards{grid-template-columns:repeat(2,1fr)}
+  .quick-actions{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .app-header-right{gap:6px}
+  .header-publish{font-size:0;padding:9px 11px}
+  .header-publish:after{content:"↗";font-size:15px}
+  .lang-switch button{padding:6px 7px;font-size:10px}
+  .grid-cards{gap:8px}
+  .stat-card{padding:14px;min-height:100px}
+  .stat-card .k{font-size:23px}
+  .card{padding:15px}
+}
+
+
+.dashboard-welcome{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:4px 0 22px;
+}
+.dashboard-welcome .eyebrow{font-size:9px;letter-spacing:2px;color:#aaa9a1;margin-bottom:5px;font-weight:700}
+.dashboard-welcome h2{margin:0;font-size:28px;letter-spacing:-.7px}
+.dashboard-welcome p{margin:5px 0 0;color:#8e8e87;font-size:11.5px}
+.dashboard-primary{background:#111;color:#fff;border:0;border-radius:10px;padding:12px 17px;font-size:12px;font-weight:700}
+.dashboard-grid{display:grid;grid-template-columns:.95fr 1.45fr;gap:14px;margin-bottom:14px}
+.dashboard-grid.lower{grid-template-columns:1.35fr .8fr}
+.dashboard-panel{background:#fff;border:1px solid #e8e8e4;border-radius:16px;padding:18px;box-shadow:0 7px 25px rgba(17,17,17,.035)}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
+.panel-head small{font-size:8.5px;letter-spacing:1.4px;color:#aaa9a1;font-weight:700}
+.panel-head h3{font-size:14px;margin:4px 0 0;color:#111}
+.mini-link{background:none;color:#8c8c84;font-size:10.5px;padding:4px}
+.mini-link:hover{color:#111}
+.recent-list{display:flex;flex-direction:column}
+.recent-item{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid #eeeeea}
+.recent-item:last-child{border-bottom:0}
+.recent-icon{width:32px;height:32px;border-radius:9px;background:#f3f3ef;display:flex;align-items:center;justify-content:center;color:#222;font-size:13px;flex-shrink:0}
+.recent-title{font-size:11.5px;font-weight:700;color:#222}
+.recent-meta{font-size:10px;color:#999;margin-top:2px}
+.analytics-number{display:flex;align-items:baseline;gap:8px;margin:2px 0 0}
+.analytics-number span{font-size:32px;font-weight:800;letter-spacing:-1px}
+.analytics-number small{color:#999;font-size:10px}
+.analytics-chart{width:100%;height:145px;margin-top:8px;display:block;overflow:visible}
+.chart-labels{display:flex;justify-content:space-between;color:#aaa9a1;font-size:9px;margin-top:-2px}
+.analytics-tabs{display:flex;border:1px solid #e5e5e0;border-radius:8px;overflow:hidden}
+.analytics-tabs span{padding:5px 8px;font-size:9px;color:#999}
+.analytics-tabs span.active{background:#111;color:#fff}
+.status-big{display:flex;align-items:center;gap:8px;padding:9px 0 14px;font-size:11px}
+.status-big .status-dot{width:8px;height:8px;background:#35d596;border-radius:50%;box-shadow:0 0 0 4px #eafaf2}
+.status-big b{font-size:11px}
+.status-big>span:last-child{margin-right:auto;color:#92928b;font-size:10px}
+@media(max-width:900px){
+  .dashboard-grid,.dashboard-grid.lower{grid-template-columns:1fr}
+  .dashboard-welcome{align-items:flex-start}
+}
+@media(max-width:600px){
+  .dashboard-welcome{display:block}
+  .dashboard-primary{margin-top:13px;width:100%}
+  .dashboard-welcome h2{font-size:24px}
+}
+
+
+/* ============ THREE.JS INTRO BACKGROUND ============ */
+#threeIntroCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none;opacity:.72}
+#intro .intro-grid,#intro .intro-scan{z-index:2}
+#intro .intro-content{z-index:3}
+@media(max-width:640px){#threeIntroCanvas{opacity:.5}}
+
+
+/* ============ FINAL MOBILE / SIMPLE ADMIN PASS ============ */
+@media(max-width:899px){
+  body{overflow-x:hidden}
+  .app-header{height:60px;padding:0 10px;gap:7px}
+  .app-header-brand{gap:8px;min-width:0;flex:1}
+  .app-header-logo{width:30px;height:30px;font-size:12px}
+  .app-header-brand h1{font-size:13px;white-space:nowrap}
+  .header-publish{padding:8px 10px;border-radius:9px}
+  .lang-switch button{padding:5px 7px;font-size:9.5px}
+  .main{padding:14px 10px 88px;max-width:100%;overflow:hidden}
+  .topbar{margin-bottom:15px;gap:8px;align-items:flex-start}
+  .topbar h1{font-size:19px}
+  .topbar .sub{font-size:10.5px;line-height:1.45}
+  .topbar .top-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .topbar .top-actions .btn-danger-outline{grid-column:1/-1}
+  .topbar .btn-sm{width:100%;padding:9px 8px;font-size:10.5px}
+  .dashboard-welcome{margin:0 0 14px}
+  .dashboard-welcome h2{font-size:22px}
+  .dashboard-welcome p{font-size:10.5px;line-height:1.6}
+  .dashboard-primary{padding:10px 13px;font-size:11px}
+  .dashboard-grid,.dashboard-grid.lower{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+  .dashboard-panel,.card{border-radius:13px;padding:14px}
+  .panel-head{margin-bottom:10px}
+  .panel-head h3{font-size:13px}
+  .panel-head small{font-size:7.5px}
+  .analytics-number span{font-size:27px}
+  .analytics-chart{height:110px}
+  .grid-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:10px}
+  .stat-card{min-width:0;min-height:88px;padding:12px;border-radius:13px}
+  .stat-card .k{font-size:21px}
+  .stat-card .l{font-size:9.5px;line-height:1.35}
+  .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .qa{padding:11px 7px;font-size:10.5px;min-width:0}
+  .qa .qi{font-size:16px}
+  .row,.row3{grid-template-columns:1fr;gap:8px}
+  .detail-layout{display:block}
+  .detail-layout .lp-col{position:static;margin-top:10px}
+  .tabbar{gap:0;margin:12px 0;overflow-x:auto;scrollbar-width:none}
+  .tabbar button{font-size:10.5px;padding:9px 5px;margin-left:12px;margin-right:0}
+  .subnav-layout{display:block}
+  .subnav2{display:flex;flex-direction:row;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding:4px}
+  .subnav2 button{white-space:nowrap;font-size:10px;padding:8px 9px}
+  .proj-grid{grid-template-columns:1fr;gap:9px}
+  .proj-card-thumb{height:130px}
+  .detail-header-left{min-width:0}
+  .detail-header-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .detail-header-actions button:last-child{grid-column:1/-1}
+  .search-bar{margin-bottom:10px}
+  .img-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .img-card{min-width:0}
+  #previewFrame{height:70vh;max-width:100%}
+  .preview-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .preview-toolbar .spacer{display:none}
+  .seg{grid-column:1/-1;width:100%}
+  .seg button{flex:1}
+  input,textarea,select{font-size:13px;padding:10px}
+  label{font-size:10.5px;margin-top:9px}
+  .mobile-nav{padding:5px 3px calc(5px + env(safe-area-inset-bottom))}
+  .mnav-item{font-size:8.5px;padding:6px 1px}
+  .mnav-item .ic{font-size:15px}
+  #moreSheet{max-height:68vh}
+}
+@media(max-width:380px){
+  .app-header-brand h1{font-size:12px}
+  .header-publish{font-size:0;padding:8px 9px}
+  .header-publish:after{content:'↗';font-size:14px}
+  .lang-switch button{padding:5px 6px}
+  .main{padding-left:8px;padding-right:8px}
+  .dashboard-welcome h2{font-size:20px}
+}
+
+</style>
+
+<style id="final-mobile-simple-overrides">
+/* FINAL SIMPLE + MOBILE-FIRST PASS */
+@media(max-width:899px){
+  .app-header{padding:10px 12px;gap:8px;min-height:58px}
+  .app-header-brand h1{font-size:14px}
+  .app-header-brand small{font-size:9px}
+  .app-header-right{gap:6px}
+  .app-header-account .who{display:none}
+  .app-header-account .avatar{width:30px;height:30px}
+  .lang-switch button{padding:6px 9px;font-size:10px}
+  .main{padding:14px 12px 88px!important}
+  .topbar{margin-bottom:14px;align-items:flex-start}
+  .topbar h1{font-size:17px}
+  .topbar .sub{font-size:11px;line-height:1.5}
+  .top-actions{width:100%;gap:6px}
+  .top-actions>*{flex:1;min-width:0}
+  .card{border-radius:12px;padding:13px;margin-bottom:10px}
+  .card h2{font-size:13px;margin-bottom:8px}
+  .hint{font-size:10.5px;line-height:1.55}
+  .stat-grid,.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .stat-card{min-height:82px;padding:11px!important;border-radius:11px!important}
+  .stat-card .k{font-size:22px!important}
+  .stat-card .l{font-size:9.5px!important}
+  .proj-grid{grid-template-columns:1fr!important;gap:9px!important}
+  .proj-card{border-radius:12px}
+  .proj-card-thumb{height:125px}
+  .proj-card-body{padding:11px 12px}
+  .proj-card-body h3{font-size:13px}
+  .proj-card-body p{font-size:10.5px}
+  .proj-card-actions{padding:8px 10px!important}
+  .row,.row2,.row3,.grid2,.grid3,.case-editor-grid{grid-template-columns:1fr!important;display:grid!important;gap:8px!important}
+  input,textarea,select{font-size:16px!important;min-height:42px}
+  textarea{min-height:100px}
+  .btn-main,.btn-ghost,.btn-danger-outline,.btn-add{min-height:42px;padding:9px 12px!important;font-size:11px!important}
+  .pd-head{flex-direction:column!important;align-items:stretch!important}
+  #pdTabbar,#pdSubnav{overflow-x:auto;flex-wrap:nowrap!important;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #pdTabbar::-webkit-scrollbar,#pdSubnav::-webkit-scrollbar{display:none}
+  #pdTabbar button,#pdSubnav button{white-space:nowrap;flex:0 0 auto}
+  .preview-shell{overflow:hidden!important}
+  #previewFrame{max-width:100%!important}
+  .mobile-nav{padding-top:5px!important}
+  .mnav-item{min-height:54px;padding:6px 2px!important;font-size:9px!important}
+  .mnav-item .ic{font-size:16px!important}
+  #moreSheet{max-height:78vh}
+}
+@media(max-width:380px){
+  .stat-grid,.stats-grid{grid-template-columns:1fr!important}
+  .app-header-brand small{display:none}
+  .lang-switch button{padding:5px 7px}
+}
+/* cleaner desktop proportions */
+@media(min-width:900px){
+  .main{max-width:1320px}
+  .proj-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+</style>
+
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-card" id="loginCard">
+    <div class="login-brand">
+      <span class="lmark">P</span>
+      <h1 data-i18n="login.title">تسجيل الدخول</h1>
+      <p data-i18n="login.sub">لوحة تحكم البورتفوليو</p>
+    </div>
+    <label data-i18n="login.username">اسم المستخدم</label>
+    <input id="loginUser" autocomplete="off" data-i18n-ph="login.username">
+    <label data-i18n="login.password">كلمة المرور</label>
+    <div class="pwrap">
+      <button type="button" class="eye" id="loginEye" data-icon="eye"></button>
+      <input id="loginPass" type="password" autocomplete="off">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-main full" id="loginBtn" type="button" style="margin-top:18px" data-i18n="login.btn">دخول</button>
+    <div class="login-lang">
+      <div class="lang-switch" id="loginLangSwitch">
+        <button type="button" data-lang="ar">العربية</button>
+        <button type="button" data-lang="en">English</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ INTRO ============ -->
+<div id="intro">
+  <canvas id="threeIntroCanvas" aria-hidden="true"></canvas>
+  <div class="intro-grid"></div>
+  <div class="intro-scan"></div>
+  <div class="intro-content">
+    <p class="intro-title">ADMIN</p>
+    <p class="intro-sub">PORTFOLIO CONTROL PANEL</p>
+    <div class="intro-bar"><span></span></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <header class="app-header">
+    <div class="app-header-brand">
+      <div class="app-header-logo">P</div>
+      <div><h1 data-i18n="header.title">Portfolio</h1><small data-i18n="header.sub">Control Center</small></div>
+    </div>
+    <div class="header-search">
+      <span>⌕</span>
+      <input id="globalSearch" type="search" data-i18n-ph="dash.search" placeholder="ابحث في لوحة التحكم..." autocomplete="off">
+    </div>
+    <div class="app-header-right">
+      <button class="header-publish" id="headerPublishButton" type="button"><span data-i18n="top.publish">نشر التغييرات</span> ↗</button>
+      <div class="lang-switch" id="headerLangSwitch">
+        <button type="button" data-lang="ar">AR</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <div class="app-header-account">
+        <div class="avatar" data-icon="user"></div>
+        <div class="who"><b id="headerAccUser">admin</b><small data-i18n="header.role">مسؤول</small></div>
+      </div>
+    </div>
+  </header>
+  <div class="app-body">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-dot" id="sideDot"></span><div><b data-i18n="brand.title">لوحة التحكم</b><small id="sideConnLabel" data-i18n="brand.disconnected">غير متصل</small></div></div>
+    <nav id="navList"></nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle" data-i18n="nav.overview.label">نظرة عامة</h1>
+        <p class="sub" id="pageSub" data-i18n="nav.overview.sub">ملخص سريع لحالة البورتفوليو والاتصال</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn-ghost btn-sm" id="btnSaveDraft" type="button"><span class="btn-ic" data-icon="save"></span> <span data-i18n="top.saveDraft">حفظ مسودة</span></button>
+        <button class="btn-main btn-sm" id="btnPublishTop" type="button"><span class="btn-ic" data-icon="publish"></span> <span data-i18n="top.publish">نشر على GitHub</span></button>
+        <button class="btn-danger-outline btn-sm" id="btnLogout" type="button" data-i18n="top.logout">خروج</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section class="section-page" data-page="overview">
+      <div class="dashboard-welcome">
+        <div>
+          <div class="eyebrow" data-i18n="dash.eyebrow">PORTFOLIO CONTROL CENTER</div>
+          <h2>أهلاً، <span id="dashWelcomeUser">Mahmoud</span> 👋</h2>
+          <p data-i18n="dash.welcomeSub">إليك ملخص سريع عن حالة البورتفوليو وآخر التغييرات.</p>
+        </div>
+        <button class="dashboard-primary" id="dashPublish" type="button"><span data-i18n="top.publishShort">نشر التغييرات</span> ↗</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-panel recent-panel">
+          <div class="panel-head">
+            <div><small data-i18n="dash.recentEyebrow">RECENT ACTIVITY</small><h3 data-i18n="ov.activity">آخر النشاطات</h3></div>
+            <button class="mini-link" data-go="github" data-i18n="dash.viewAll">عرض الكل</button>
+          </div>
+          <div class="recent-list">
+            <div class="recent-item">
+              <div class="recent-icon">↥</div>
+              <div><div class="recent-title" data-i18n="ov.lastLoad">آخر تحميل من GitHub</div><div class="recent-meta" id="dashLoaded">—</div></div>
+            </div>
+            <div class="recent-item">
+              <div class="recent-icon">✓</div>
+              <div><div class="recent-title" data-i18n="ov.lastSave">آخر حفظ</div><div class="recent-meta" id="dashSaved">—</div></div>
+            </div>
+            <div class="recent-item">
+              <div class="recent-icon">●</div>
+              <div><div class="recent-title" data-i18n="ov.connStatus">حالة الاتصال</div><div class="recent-meta" id="dashConn">غير متصل</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-panel analytics-panel">
+          <div class="panel-head">
+            <div><small data-i18n="dash.overviewEyebrow">PORTFOLIO OVERVIEW</small><h3 data-i18n="dash.portfolioStatus">حالة البورتفوليو</h3></div>
+            <div class="analytics-tabs"><span class="active" data-i18n="dash.overviewTab">Overview</span><span data-i18n="dash.detailsTab">Details</span></div>
+          </div>
+          <div class="analytics-number"><span id="dashMainMetric">—</span><small data-i18n="dash.totalItems">إجمالي العناصر</small></div>
+          <svg class="analytics-chart" viewBox="0 0 700 180" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#111" stop-opacity=".09"/><stop offset="100%" stop-color="#111" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0 140 L70 128 L130 145 L190 92 L245 118 L305 75 L365 112 L425 45 L480 70 L540 52 L600 92 L650 28 L700 8 L700 180 L0 180 Z" fill="url(#areaFill)"/>
+            <path d="M0 140 L70 128 L130 145 L190 92 L245 118 L305 75 L365 112 L425 45 L480 70 L540 52 L600 92 L650 28 L700 8" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="0" y1="168" x2="700" y2="168" stroke="#e9e9e4"/>
+          </svg>
+          <div class="chart-labels"><span data-i18n="dash.start">Start</span><span data-i18n="dash.now">Now</span></div>
+        </div>
+      </div>
+
+      <div class="grid-cards" id="ovCards"></div>
+
+      <div class="dashboard-grid lower">
+        <div class="dashboard-panel">
+          <div class="panel-head"><div><small data-i18n="dash.quickEyebrow">QUICK ACTIONS</small><h3 data-i18n="ov.quick">الوصول السريع</h3></div></div>
+          <div class="quick-actions">
+            <div class="qa" data-go="content"><span class="qi" data-icon="edit"></span><span data-i18n="ov.qaContent">تعديل المحتوى</span></div>
+            <div class="qa" data-go="projects" data-add="project"><span class="qi" data-icon="plus"></span><span data-i18n="ov.qaAddProject">إضافة مشروع</span></div>
+            <div class="qa" data-go="skills" data-add="skill"><span class="qi" data-icon="target"></span><span data-i18n="ov.qaAddSkill">إضافة مهارة</span></div>
+            <div class="qa" data-go="images"><span class="qi" data-icon="image"></span><span data-i18n="ov.qaImage">رفع صورة</span></div>
+            <div class="qa" data-go="preview"><span class="qi" data-icon="eye"></span><span data-i18n="ov.qaPreview">معاينة الموقع</span></div>
+            <div class="qa" id="qaPublish"><span class="qi" data-icon="publish"></span><span data-i18n="ov.qaPublish">نشر التغييرات</span></div>
+          </div>
+        </div>
+        <div class="dashboard-panel">
+          <div class="panel-head"><div><small data-i18n="dash.systemEyebrow">SYSTEM STATUS</small><h3 data-i18n="dash.systemStatus">حالة النظام</h3></div></div>
+          <div class="status-big"><span class="status-dot"></span><b data-i18n="dash.portfolioAdmin">Portfolio Admin</b><span id="dashStatusText">جاهز للعمل</span></div>
+          <div class="activity-row"><span data-i18n="ov.lastLoad">آخر تحميل من GitHub</span><span id="actLoaded">—</span></div>
+          <div class="activity-row"><span data-i18n="ov.lastSave">آخر حفظ</span><span id="actSaved">—</span></div>
+          <div class="activity-row"><span data-i18n="ov.connStatus">حالة الاتصال</span><span id="actConn" class="badge-status disconnected"><i class="dot"></i><span data-i18n="brand.disconnected">غير متصل</span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GITHUB -->
+    <section class="section-page" data-page="github">
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="link"></span> <span data-i18n="gh.connect">الاتصال بـ GitHub</span></h2>
+        <p class="hint" data-i18n="gh.connectHint">اربط اللوحة بمستودعك عشان تقدر تحمّل وتحفظ index.html</p>
+        <div class="row">
+          <div><label data-i18n="gh.owner">اسم المستخدم (Owner)</label><input id="cfgOwner" placeholder="mahmoudmo159"></div>
+          <div><label data-i18n="gh.repo">اسم المستودع (Repo)</label><input id="cfgRepo" placeholder="my-portfolio"></div>
+        </div>
+        <div class="row">
+          <div><label data-i18n="gh.filename">اسم الملف</label><input id="cfgPath" value="index.html"></div>
+          <div><label data-i18n="gh.branch">الـ Branch</label><input id="cfgBranch" value="main"></div>
+        </div>
+        <label>Personal Access Token</label>
+        <div class="pwrap">
+          <button type="button" class="eye" id="tokEye" data-icon="eye"></button>
+          <input id="cfgToken" type="password" placeholder="github_pat_xxxxxxxxxxxx">
+        </div>
+        <div class="setting-row" style="border:0;padding-top:10px">
+          <div><b data-i18n="gh.remember">تذكّر التوكن</b><small data-i18n="gh.rememberHint">يتخزن في localStorage على جهازك فقط</small></div>
+          <label class="switch"><input type="checkbox" id="rememberToken" checked><span class="slider"></span></label>
+        </div>
+        <div class="warn-box"><span class="h2-ic" data-icon="warn"></span> <span data-i18n="gh.warn">تخزين التوكن في المتصفح فيه مخاطرة أمنية — أي حد يستخدم نفس الجهاز/المتصفح ممكن يوصله. استخدم توكن بصلاحيات محدودة (Fine-grained، على المستودع ده بس) ولو الجهاز مشترك سيب "تذكر التوكن" متبوّت.</span></div>
+        <div class="top-actions" style="margin-top:16px">
+          <button class="btn-main" id="loadBtn" type="button" data-i18n="gh.load">تحميل الملف</button>
+          <button class="btn-danger-outline" id="clearCredsBtn" type="button" data-i18n="gh.clearCreds">مسح بيانات الاتصال</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="doc"></span> <span data-i18n="gh.reqStatus">حالة الطلبات</span></h2>
+        <div class="activity-row"><span>GET contents</span><span id="stGet">—</span></div>
+        <div class="activity-row"><span>PUT contents</span><span id="stPut">—</span></div>
+        <div class="activity-row"><span data-i18n="gh.sha">SHA الحالي</span><span id="stSha">—</span></div>
+      </div>
+    </section>
+
+    <!-- CONTENT -->
+    <section class="section-page" data-page="content">
+      <div id="noDocWarnContent" class="card"><div class="empty"><span class="ei" data-icon="plug"></span><b data-i18n="warn.noDoc">لازم تحمّل الملف الأول</b><small data-i18n="warn.noDocHint">روح لقسم GitHub واتصل وحمّل index.html</small></div></div>
+      <div id="contentBody" style="display:none">
+        <div class="card"><h2><span class="h2-ic" data-icon="gear"></span> <span data-i18n="content.general">عام</span></h2>
+          <label data-i18n="content.pageTitle">عنوان التاب (Title)</label><input id="f_title">
+          <label data-i18n="content.metaDesc">وصف الميتا</label><textarea id="f_metaDesc"></textarea>
+          <label data-i18n="content.logoText">اسم الشعار في القائمة العلوية</label><input id="f_logoText">
+          <div class="row">
+            <div><label data-i18n="content.introFirst">الاسم الأول (شاشة البداية)</label><input id="f_introFirst"></div>
+            <div><label data-i18n="content.introLast">الاسم الأخير (شاشة البداية)</label><input id="f_introLast"></div>
+          </div>
+          <label data-i18n="content.introLabel">تسمية شاشة البداية</label><input id="f_introLabel">
+        </div>
+
+        <div class="card"><h2><span class="h2-ic" data-icon="layout"></span> <span data-i18n="content.hero">القسم الرئيسي (Hero)</span></h2>
+          <label data-i18n="content.badgeText">نص الشارة العلوية</label><input id="f_badgeText">
+          <div class="row3">
+            <div><label data-i18n="content.heroPre">بداية العنوان</label><input id="f_heroPre"></div>
+            <div><label data-i18n="content.heroWord1">كلمة مميزة 1</label><input id="f_heroWord1"></div>
+            <div><label data-i18n="content.heroWord2">كلمة مميزة 2</label><input id="f_heroWord2"></div>
+          </div>
+          <label data-i18n="content.heroMid">وسط العنوان</label><input id="f_heroMid">
+          <label data-i18n="content.heroText">الفقرة تحت العنوان</label><textarea id="f_heroText"></textarea>
+          <div class="row">
+            <div><label data-i18n="content.btnPrimaryText">نص الزرار الأول</label><input id="f_btnPrimary"></div>
+            <div><label data-i18n="content.btnPrimaryLink">رابط الزرار الأول</label><input id="f_btnPrimaryLink" placeholder="#contact"></div>
+          </div>
+          <div class="row">
+            <div><label data-i18n="content.btnSecondaryText">نص الزرار الثاني</label><input id="f_btnSecondary"></div>
+            <div><label data-i18n="content.btnSecondaryLink">رابط الزرار الثاني</label><input id="f_btnSecondaryLink" placeholder="#projects"></div>
+          </div>
+          <div class="row3">
+            <div><label>KPI Revenue</label><input id="f_kpi1"></div>
+            <div><label>KPI Orders</label><input id="f_kpi2"></div>
+            <div><label>KPI Profit</label><input id="f_kpi3"></div>
+          </div>
+        </div>
+
+        <div class="card"><h2><span class="h2-ic" data-icon="chart"></span> <span data-i18n="content.stats">الإحصائيات</span></h2><div id="statsWrap"></div><button class="btn-add" id="addStat" type="button">+ <span data-i18n="content.addStat">إضافة إحصائية</span></button></div>
+
+        <div class="card"><h2><span class="h2-ic" data-icon="user"></span> <span data-i18n="content.about">قسم About</span></h2>
+          <label data-i18n="content.aboutHeading">العنوان</label><input id="f_aboutHeading">
+          <label data-i18n="content.p1">فقرة 1</label><textarea id="f_aboutP1"></textarea>
+          <label data-i18n="content.p2">فقرة 2</label><textarea id="f_aboutP2"></textarea>
+          <div id="aboutMissingWarn" class="warn-box" style="display:none" data-i18n="content.aboutMissing">تنبيه: بعض عناصر قسم About مش موجودة في الملف الحالي — الحقول دي هتتجاهل عند الحفظ.</div>
+        </div>
+
+        <div class="card"><h2><span class="h2-ic" data-icon="mail"></span> <span data-i18n="content.contact">قسم التواصل</span></h2>
+          <label>Kicker</label><input id="f_contactKicker">
+          <div class="row">
+            <div><label data-i18n="content.contactPre">بداية العنوان</label><input id="f_contactPre"></div>
+            <div><label data-i18n="content.contactHighlight">الكلمة المميزة</label><input id="f_contactHighlight"></div>
+          </div>
+          <label data-i18n="content.contactDesc">الوصف</label><textarea id="f_contactDesc"></textarea>
+          <label data-i18n="content.whatsapp">رابط واتساب</label><input id="f_whatsapp">
+          <label data-i18n="content.email">الإيميل (بدون mailto:)</label><input id="f_email">
+          <label data-i18n="content.phone">رقم الهاتف</label><input id="f_phone" data-i18n-ph="content.phoneOptional" placeholder="غير مكتشف تلقائيًا — اختياري">
+          <label data-i18n="content.linkedin">رابط LinkedIn</label><input id="f_linkedin">
+        </div>
+
+        <div class="card"><h2><span class="h2-ic" data-icon="doc"></span> <span data-i18n="content.footer">الفوتر</span></h2>
+          <label data-i18n="content.footerLeft">النص الأيسر (حقوق النشر)</label><input id="f_footerLeft">
+          <label data-i18n="content.footerRight">النص الأيمن</label><input id="f_footerRight">
+        </div>
+
+        <div class="card"><h2><span class="h2-ic" data-icon="palette"></span> <span data-i18n="content.colors">الألوان والخط</span></h2>
+          <div class="row3">
+            <div><label data-i18n="content.colorPrimary">اللون الرئيسي</label><input type="color" id="f_colorBlue"></div>
+            <div><label data-i18n="content.colorSecondary">اللون الثانوي</label><input type="color" id="f_colorCyan"></div>
+            <div><label data-i18n="content.colorBg">لون الخلفية</label><input type="color" id="f_colorBg"></div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <div><label data-i18n="content.colorText">لون النص</label><input type="color" id="f_colorText"></div>
+            <div><label data-i18n="content.colorMuted">لون النص الباهت</label><input type="color" id="f_colorMuted"></div>
+          </div>
+          <label data-i18n="content.fontMain">الخط الرئيسي للموقع</label>
+          <select id="f_font">
+            <option value="Inter">Inter</option>
+            <option value="Poppins">Poppins</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Montserrat">Montserrat</option>
+            <option value="Cairo">Cairo (يدعم عربي)</option>
+            <option value="Tajawal">Tajawal (يدعم عربي)</option>
+          </select>
+          <small class="hint" data-i18n="content.colorsHint">التغييرات هتظهر في المعاينة الحية، وتتثبت على GitHub لما تنشر.</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="section-page" data-page="projects">
+      <div id="noDocWarnProjects" class="card"><div class="empty"><span class="ei" data-icon="plug"></span><b data-i18n="warn.noDoc">لازم تحمّل الملف الأول</b><small data-i18n="warn.noDocHint">روح لقسم GitHub واتصل وحمّل index.html</small></div></div>
+      <div id="projectsBody" style="display:none">
+
+        <!-- LIST VIEW -->
+        <div id="projListView">
+          <div class="card">
+            <div class="search-bar"><input id="projSearch" data-i18n-ph="projects.search" placeholder="ابحث في المشاريع..."><span class="si" data-icon="search"></span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <small class="hint" id="projCount" style="margin:0">0 مشروع</small>
+            </div>
+          </div>
+          <div class="proj-grid" id="projectsWrap"></div>
+          <button class="btn-add" id="addProject" type="button">+ <span data-i18n="projects.add">إضافة مشروع</span></button>
+        </div>
+
+        <!-- DETAIL / EDITOR VIEW -->
+        <div id="projDetailView" style="display:none">
+          <div class="crumb" id="backToProjects">← <span data-i18n="projects.backToList">الرجوع للمشاريع</span></div>
+
+          <div class="card detail-header">
+            <div class="detail-header-left">
+              <div class="detail-header-thumb" id="pdThumb" data-icon="image"></div>
+              <div class="detail-header-meta">
+                <h2><span id="pdTitle">—</span> <span class="badge-status" id="pdStatusBadge"></span></h2>
+                <p id="pdDesc"></p>
+                <div class="proj-card-tags" id="pdTags"></div>
+              </div>
+            </div>
+            <div class="detail-header-actions">
+              <button class="btn-ghost btn-sm" id="pdBtnPreview" type="button"><span class="btn-ic" data-icon="eye"></span> <span data-i18n="top.preview">معاينة</span></button>
+              <button class="btn-ghost btn-sm" id="pdBtnSaveDraft" type="button"><span class="btn-ic" data-icon="save"></span> <span data-i18n="top.saveDraft">حفظ مسودة</span></button>
+              <button class="btn-main btn-sm" id="pdBtnPublish" type="button"><span class="btn-ic" data-icon="publish"></span> <span data-i18n="top.publish">نشر على GitHub</span></button>
+            </div>
+          </div>
+
+          <div class="tabbar" id="pdTabbar">
+            <button type="button" data-tab="details" class="active" data-i18n="projects.tabDetails">تفاصيل المشروع</button>
+            <button type="button" data-tab="content" data-i18n="projects.tabContent">محتوى صفحة العرض</button>
+            <button type="button" data-tab="images" data-i18n="projects.tabImages">الصور والوسائط</button>
+            <button type="button" data-tab="settings" data-i18n="projects.tabSettings">الإعدادات</button>
+          </div>
+
+          <div class="detail-layout">
+            <div class="detail-form">
+
+              <!-- TAB: Project Details (basic info) -->
+              <div class="tabpanel" data-tabpanel="details">
+                <div class="card">
+                  <h2><span class="h2-ic" data-icon="clipboard"></span> <span data-i18n="projects.basicInfo">المعلومات الأساسية</span></h2>
+                  <p class="hint" data-i18n="projects.basicInfoHint">عدّل التفاصيل الأساسية اللي بتظهر في كارت المشروع وصفحته.</p>
+                  <div id="pdBasicFields"></div>
+                </div>
+              </div>
+
+              <!-- TAB: View Page Content -->
+              <div class="tabpanel" data-tabpanel="content" style="display:none">
+                <div class="subnav-layout">
+                  <div class="subnav2" id="pdSubnav">
+                    <button type="button" data-sub="overview" class="active" data-i18n="projects.subOverview">نظرة عامة</button>
+                    <button type="button" data-sub="challenge" data-i18n="projects.subChallenge">تحدي العمل</button>
+                    <button type="button" data-sub="solution" data-i18n="projects.subSolution">الحل</button>
+                    <button type="button" data-sub="dashboard" data-i18n="projects.subDashboard">الداشبورد</button>
+                    <button type="button" data-sub="buttons" data-i18n="projects.subButtons">أزرار وروابط الصفحة</button>
+                  </div>
+                  <div>
+                    <div class="card subpanel active" data-subpanel="overview" id="pdSubOverview"></div>
+                    <div class="card subpanel" data-subpanel="challenge" id="pdSubChallenge"></div>
+                    <div class="card subpanel" data-subpanel="solution" id="pdSubSolution"></div>
+                    <div class="card subpanel" data-subpanel="dashboard" id="pdSubDashboard"></div>
+                    <div class="card subpanel" data-subpanel="buttons" id="pdSubButtons"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB: Images & Media -->
+              <div class="tabpanel" data-tabpanel="images" style="display:none">
+                <div class="card">
+                  <h2><span class="h2-ic" data-icon="image"></span> <span data-i18n="projects.imagesTitle">صورة المعاينة</span></h2>
+                  <p class="hint" data-i18n="projects.imagesHint">صورة الكارت اللي بتظهر في قائمة المشاريع وصفحة العرض.</p>
+                  <div id="pdImageField"></div>
+                </div>
+              </div>
+
+              <!-- TAB: Settings (danger zone / manage) -->
+              <div class="tabpanel" data-tabpanel="settings" style="display:none">
+                <div class="card">
+                  <h2><span class="h2-ic" data-icon="gear"></span> <span data-i18n="projects.manage">إدارة المشروع</span></h2>
+                  <div class="setting-row">
+                    <div><b data-i18n="projects.duplicate">نسخ المشروع</b><small data-i18n="projects.duplicateHint">إنشاء نسخة كاملة من هذا المشروع</small></div>
+                    <button class="btn-ghost btn-sm" id="pdBtnDuplicate" type="button" data-i18n="projects.duplicateBtn">نسخ</button>
+                  </div>
+                  <div class="setting-row">
+                    <div><b data-i18n="projects.reorder">الترتيب</b><small data-i18n="projects.reorderHint">تحريك المشروع لأعلى أو لأسفل في القائمة</small></div>
+                    <div style="display:flex;gap:6px"><button class="btn-icon" id="pdBtnMoveUp" type="button">↑</button><button class="btn-icon" id="pdBtnMoveDown" type="button">↓</button></div>
+                  </div>
+                  <div class="setting-row" style="border-bottom:0">
+                    <div><b style="color:var(--red)" data-i18n="projects.deleteTitle">حذف المشروع</b><small data-i18n="projects.deleteHint">هذا الإجراء لا يمكن التراجع عنه</small></div>
+                    <button class="btn-danger-outline btn-sm" id="pdBtnDelete" type="button" data-i18n="projects.deleteBtn">حذف</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- LIVE PREVIEW -->
+            <aside class="lp-col">
+              <div class="card">
+                <h2><span class="h2-ic" data-icon="radio"></span> <span data-i18n="projects.livePreview">معاينة مباشرة</span></h2>
+                <p class="hint" data-i18n="projects.livePreviewHint">شوف شكل التغييرات على صفحة المشروع.</p>
+                <div class="lp-frame" id="pdLivePreview"></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section class="section-page" data-page="skills">
+      <div id="noDocWarnSkills" class="card"><div class="empty"><span class="ei" data-icon="plug"></span><b data-i18n="warn.noDoc">لازم تحمّل الملف الأول</b><small data-i18n="warn.noDocHint">روح لقسم GitHub واتصل وحمّل index.html</small></div></div>
+      <div id="skillsBody" style="display:none">
+        <div class="card">
+          <div class="search-bar"><input id="skillSearch" data-i18n-ph="skills.search" placeholder="ابحث في المهارات..."><span class="si" data-icon="search"></span></div>
+          <small class="hint" id="skillCount">0 مهارة</small>
+          <div id="skillsWrap"></div>
+          <button class="btn-add" id="addSkill" type="button">+ <span data-i18n="skills.add">إضافة مهارة</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMAGES -->
+    <section class="section-page" data-page="images">
+      <div id="noDocWarnImages" class="card"><div class="empty"><span class="ei" data-icon="plug"></span><b data-i18n="warn.noDoc">لازم تحمّل الملف الأول</b><small data-i18n="warn.noDocHint">روح لقسم GitHub واتصل وحمّل index.html</small></div></div>
+      <div id="imagesBody" style="display:none">
+        <div class="card">
+          <h2><span class="h2-ic" data-icon="upload"></span> <span data-i18n="images.uploadNew">رفع صورة جديدة</span></h2>
+          <p class="hint" data-i18n="images.uploadHint">بترفع مباشرة لمجلد images/ في المستودع عبر GitHub API</p>
+          <input type="file" accept="image/*" id="newImgFile">
+          <button class="btn-main full" id="newImgUploadBtn" type="button" style="margin-top:10px" data-i18n="images.uploadBtn">رفع الصورة</button>
+          <small class="hint" id="newImgStatus"></small>
+        </div>
+        <div class="card">
+          <h2><span class="h2-ic" data-icon="image"></span> <span data-i18n="images.current">صور المشاريع الحالية</span></h2>
+          <p class="hint" data-i18n="images.currentHint">الصور المستخدمة حاليًا في المشاريع — تقدر تنسخ المسار أو تشيل الصورة من المشروع</p>
+          <div class="img-grid" id="imagesGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <section class="section-page" data-page="preview">
+      <div id="noDocWarnPreview" class="card"><div class="empty"><span class="ei" data-icon="plug"></span><b data-i18n="warn.noDoc">لازم تحمّل الملف الأول</b><small data-i18n="warn.noDocHint">روح لقسم GitHub واتصل وحمّل index.html</small></div></div>
+      <div id="previewBody" style="display:none" class="card">
+        <div class="preview-toolbar">
+          <button class="btn-ghost btn-sm" id="refreshPreview" type="button"><span class="btn-ic" data-icon="refresh"></span> <span data-i18n="preview.refresh">تحديث المعاينة</span></button>
+          <button class="btn-ghost btn-sm" id="openPreviewTab" type="button"><span class="btn-ic" data-icon="external"></span> <span data-i18n="preview.openTab">فتح في تاب جديد</span></button>
+          <span class="spacer"></span>
+          <div class="seg">
+            <button data-w="desktop" class="active" type="button"><span class="btn-ic" data-icon="monitor"></span> <span data-i18n="preview.desktop">ديسكتوب</span></button>
+            <button data-w="mobile" type="button"><span class="btn-ic" data-icon="mobile"></span> <span data-i18n="preview.mobile">موبايل</span></button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center">
+          <iframe id="previewFrame"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section-page" data-page="settings">
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="sliders"></span> <span data-i18n="settings.panel">إعدادات اللوحة</span></h2>
+        <div class="setting-row"><div><b data-i18n="settings.dark">الوضع الليلي</b><small data-i18n="settings.darkHint">وضع عرض لوحة التحكم نفسها</small></div>
+          <label class="switch"><input type="checkbox" id="adminDark" checked><span class="slider"></span></label></div>
+        <div class="setting-row"><div><b data-i18n="settings.reduceMotion">تقليل الحركة</b><small data-i18n="settings.reduceMotionHint">يوقف أنيميشن الشاشة الافتتاحية والانتقالات</small></div>
+          <label class="switch"><input type="checkbox" id="reducedMotion"><span class="slider"></span></label></div>
+        <div class="setting-row"><div><b data-i18n="settings.motionIntensity">شدة الحركة</b><small data-i18n="settings.motionIntensityHint">يتحكم بسرعة/كثافة تأثيرات اللوحة</small></div>
+          <select id="motionIntensity" style="width:130px"><option value="full" data-i18n="settings.full">كامل</option><option value="light" data-i18n="settings.light">خفيف</option></select></div>
+        <div class="setting-row"><div><b data-i18n="settings.language">اللغة</b><small data-i18n="settings.languageHint">لغة عرض لوحة التحكم</small></div>
+          <div class="lang-switch" id="settingsLangSwitch"><button type="button" data-lang="ar">AR</button><button type="button" data-lang="en">EN</button></div></div>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="user"></span> <span data-i18n="account.title">حساب المشرف</span></h2>
+        <p class="hint" data-i18n="account.hint">لازم كلمة المرور الحالية عشان تغيّر اسم المستخدم أو كلمة المرور</p>
+        <label data-i18n="account.currentPass">كلمة المرور الحالية</label>
+        <div class="pwrap"><button type="button" class="eye" id="accCurEye" data-icon="eye"></button><input id="accCurrentPass" type="password" autocomplete="off"></div>
+        <label data-i18n="account.newUser">اسم المستخدم الجديد</label>
+        <input id="accNewUser" autocomplete="off">
+        <label data-i18n="account.newPass">كلمة المرور الجديدة</label>
+        <div class="pwrap"><button type="button" class="eye" id="accNewEye" data-icon="eye"></button><input id="accNewPass" type="password" autocomplete="off"></div>
+        <label data-i18n="account.confirmPass">تأكيد كلمة المرور الجديدة</label>
+        <div class="pwrap"><button type="button" class="eye" id="accConfEye" data-icon="eye"></button><input id="accConfirmPass" type="password" autocomplete="off"></div>
+        <div class="login-error" id="accError"></div>
+        <button class="btn-main full" id="accSaveBtn" type="button" style="margin-top:14px" data-i18n="account.save">حفظ التغييرات</button>
+        <small class="hint" style="margin-top:8px;display:block" data-i18n="account.note">اسم المستخدم وكلمة المرور الحاليان بيتخزنوا محليًا على هذا الجهاز فقط — دي حماية جانب المتصفح وليست Authentication حقيقي على سيرفر.</small>
+      </div>
+
+      <!-- BACKUP / RESTORE -->
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="box"></span> <span data-i18n="backup.title">نسخ احتياطي واستعادة</span></h2>
+        <p class="hint" data-i18n="backup.hint">صدّر نسخة من إعدادات اللوحة (اتصال GitHub بدون التوكن، اسم المستخدم، اللغة) أو استرجعها</p>
+        <div class="top-actions">
+          <button class="btn-main" id="exportBackupBtn" type="button" data-i18n="backup.export">تصدير نسخة احتياطية</button>
+          <button class="btn-ghost" id="importBackupBtn" type="button" data-i18n="backup.import">استيراد / استعادة</button>
+        </div>
+        <input type="file" id="restoreFileInput" accept="application/json" style="display:none">
+        <small class="hint" id="backupStatus" style="margin-top:8px;display:block"></small>
+      </div>
+
+      <!-- AUDIT LOG -->
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="doc"></span> <span data-i18n="audit.title">سجل الأحداث</span></h2>
+        <p class="hint" data-i18n="audit.hint">آخر الأحداث المهمة في اللوحة — لا يتم تسجيل كلمات المرور أبدًا</p>
+        <div id="auditList"></div>
+        <button class="btn-danger-outline full" id="clearAuditBtn" type="button" style="margin-top:10px" data-i18n="audit.clear">مسح السجل</button>
+      </div>
+
+      <div class="card">
+        <h2><span class="h2-ic" data-icon="trash"></span> <span data-i18n="settings.savedData">بيانات محفوظة</span></h2>
+        <p class="hint" data-i18n="settings.savedDataHint">إعدادات GitHub (Owner/Repo/Branch/Path) والتوكن لو اخترت تحفظه</p>
+        <button class="btn-danger-outline full" id="clearAllSettings" type="button" data-i18n="settings.clearAll">مسح كل الإعدادات المحفوظة</button>
+      </div>
+    </section>
+  </main>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="mobile-nav">
+  <div class="mobile-nav-inner" id="mobileNavInner"></div>
+</div>
+<div id="sheetBackdrop"></div>
+<div id="moreSheet"><div class="sheet-handle"></div><div id="moreSheetList"></div></div>
+
+<div id="toastWrap"></div>
+<div id="modalOverlay"><div class="modal">
+  <h3 id="modalTitle">تأكيد</h3>
+  <p id="modalMsg"></p>
+  <div class="mbtns"><button class="btn-ghost" id="modalCancel" type="button" data-i18n="modal.cancel">إلغاء</button><button class="btn-danger-outline" id="modalConfirm" type="button" data-i18n="modal.confirm">تأكيد</button></div>
+</div></div>
+<div id="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CFG_KEYS=['cfgOwner','cfgRepo','cfgPath','cfgBranch'];
+
+/* ============ ICON SET (inline SVG, stroke-based, replaces emoji) ============ */
+const ICONS={
+  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/>',
+  user:'<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/>',
+  publish:'<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/><path d="M5 21h14"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+  clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6"/><path d="M9 15h6"/>',
+  link:'<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/>',
+  warn:'<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".5"/>',
+  doc:'<path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/>',
+  plug:'<path d="M12 22v-4"/><path d="M8 6V2"/><path d="M16 6V2"/><path d="M7 6h10v4a5 5 0 0 1-10 0Z"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M7 15v3"/><path d="M12 10v8"/><path d="M17 6v12"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
+  palette:'<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 22a10 10 0 1 1 0-20 8 8 0 0 1 8 8c0 1.7-1.3 3-3 3h-1.5a2 2 0 0 0-1 3.7A2 2 0 0 1 13 21a2 2 0 0 1-1 1Z"/>',
+  radio:'<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
+  monitor:'<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>',
+  mobile:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/>',
+  sliders:'<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/>',
+  box:'<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+  trash:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  menu:'<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  bulb:'<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10.5c.6.5 1 1.3 1 2.1V16h6v-1.4c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 2Z"/>',
+  spark:'<path d="m12 3 1.6 5.2L19 10l-5.4 1.8L12 17l-1.6-5.2L5 10l5.4-1.8Z"/>',
+  layout:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>',
+  upload:'<path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/>',
+  external:'<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/>',
+};
+function ic(name,cls){return `<svg class="icon${cls?' '+cls:''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||''}</svg>`;}
+function applyIcons(){document.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=ic(el.dataset.icon);});}
+applyIcons();
+
+/* ============ DATA SERVICE (localStorage abstraction) ============
+   Static/GitHub-Pages mode: this is a Frontend-only Data Service layer.
+   It is NOT a real backend — it simply centralizes localStorage access
+   so it can be swapped for a real API later without touching the UI. */
+const DataService={
+  get(key,def=null){try{const v=localStorage.getItem(key);return v===null?def:JSON.parse(v);}catch(e){return def;}},
+  set(key,val){try{localStorage.setItem(key,JSON.stringify(val));return true;}catch(e){return false;}},
+  remove(key){localStorage.removeItem(key);}
+};
+
+/* ============ HASHING (frontend-only protection, not real security) ============ */
+async function sha256Hex(str){
+  const enc=new TextEncoder().encode(str);
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ============ AUDIT LOG ============ */
+const AUDIT_KEY='auditLog';
+function logEvent(type,detail){
+  const log=DataService.get(AUDIT_KEY,[]);
+  log.unshift({type,detail:detail||'',time:new Date().toISOString()});
+  if(log.length>200)log.length=200;
+  DataService.set(AUDIT_KEY,log);
+  if(typeof renderAuditLog==='function')renderAuditLog();
+}
+function renderAuditLog(){
+  const wrap=$('auditList');if(!wrap)return;
+  const log=DataService.get(AUDIT_KEY,[]);
+  if(!log.length){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('doc')}</span><b data-i18n="audit.empty">لا يوجد أحداث مسجلة</b></div>`;applyI18n();return;}
+  wrap.innerHTML=log.map(e=>`<div class="audit-row"><span class="a-type">${escHtml(auditLabel(e.type))}${e.detail?' — '+escHtml(e.detail):''}</span><span class="a-time">${new Date(e.time).toLocaleString(currentLang==='ar'?'ar-EG':'en-US')}</span></div>`).join('');
+}
+function auditLabel(type){
+  const map={
+    login:t('audit.login','تسجيل دخول'),loginFailed:t('audit.loginFailed','محاولة دخول فاشلة'),
+    logout:t('audit.logout','تسجيل خروج'),dashboardEdit:t('audit.dashboardEdit','تعديل محتوى'),
+    settingsChange:t('audit.settingsChange','تغيير إعدادات'),accountChange:t('audit.accountChange','تغيير بيانات الحساب'),
+    backup:t('audit.backup','تصدير نسخة احتياطية'),restore:t('audit.restore','استعادة نسخة احتياطية'),
+    migration:t('audit.migration','ترقية البيانات (Migration)')
+  };
+  return map[type]||type;
+}
+function escHtml(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ============ I18N ============ */
+const I18N={
+ar:{
+  'login.title':'تسجيل الدخول','login.sub':'لوحة تحكم البورتفوليو','login.username':'اسم المستخدم','login.password':'كلمة المرور','login.btn':'دخول',
+  'login.errEmpty':'من فضلك أدخل اسم المستخدم وكلمة المرور','login.errWrong':'اسم المستخدم أو كلمة المرور غير صحيحة',
+  'header.title':'Portfolio Admin','header.sub':'إدارة • تعديل • نشر','header.role':'مسؤول',
+  'brand.title':'لوحة التحكم','brand.disconnected':'غير متصل','brand.connected':'متصل — الملف محمّل',
+  'top.saveDraft':'حفظ مسودة','top.publish':'نشر على GitHub','top.logout':'خروج',
+  'nav.overview.label':'نظرة عامة','nav.overview.sub':'ملخص سريع لحالة البورتفوليو والاتصال',
+  'nav.content.label':'محتوى البورتفوليو','nav.content.sub':'التحكم في النصوص والألوان والخط',
+  'nav.projects.label':'المشاريع','nav.projects.sub':'إضافة وتعديل وترتيب المشاريع',
+  'nav.skills.label':'المهارات','nav.skills.sub':'إدارة قائمة المهارات المعروضة',
+  'nav.images.label':'الصور','nav.images.sub':'رفع وإدارة صور المشاريع',
+  'nav.preview.label':'معاينة مباشرة','nav.preview.sub':'شوف شكل الموقع قبل النشر',
+  'nav.github.label':'GitHub','nav.github.sub':'الاتصال بالمستودع وتحميل/حفظ الملف',
+  'nav.settings.label':'الإعدادات','nav.settings.sub':'تخصيص اللوحة ومسح البيانات المحفوظة وإدارة الحساب',
+  'nav.more':'المزيد',
+  'ov.quick':'إجراءات سريعة','ov.quickHint':'وصول سريع لأكثر المهام استخدامًا',
+  'ov.qaContent':'تعديل المحتوى','ov.qaAddProject':'إضافة مشروع','ov.qaAddSkill':'إضافة مهارة','ov.qaImage':'رفع صورة','ov.qaPreview':'معاينة الموقع','ov.qaPublish':'نشر التغييرات',
+  'ov.activity':'آخر النشاطات','ov.lastLoad':'آخر تحميل من GitHub','ov.lastSave':'آخر حفظ','ov.connStatus':'حالة الاتصال',
+  'ov.nProjects':'إجمالي المشاريع','ov.nSkills':'إجمالي المهارات','ov.nSections':'أقسام البورتفوليو','ov.connLabel':'حالة اتصال GitHub',
+  'gh.connect':'الاتصال بـ GitHub','gh.connectHint':'اربط اللوحة بمستودعك عشان تقدر تحمّل وتحفظ index.html',
+  'gh.owner':'اسم المستخدم (Owner)','gh.repo':'اسم المستودع (Repo)','gh.filename':'اسم الملف','gh.branch':'الـ Branch',
+  'gh.remember':'تذكّر التوكن','gh.rememberHint':'يتخزن في localStorage على جهازك فقط',
+  'gh.warn':'تخزين التوكن في المتصفح فيه مخاطرة أمنية — أي حد يستخدم نفس الجهاز/المتصفح ممكن يوصله. استخدم توكن بصلاحيات محدودة (Fine-grained، على المستودع ده بس) ولو الجهاز مشترك سيب "تذكر التوكن" متبوّت.',
+  'gh.load':'تحميل الملف','gh.clearCreds':'مسح بيانات الاتصال','gh.reqStatus':'حالة الطلبات','gh.sha':'SHA الحالي',
+  'content.general':'عام','content.hero':'القسم الرئيسي (Hero)','content.stats':'الإحصائيات','content.addStat':'إضافة إحصائية',
+  'content.about':'قسم About','content.contact':'قسم التواصل','content.footer':'الفوتر','content.colors':'الألوان والخط',
+  'content.pageTitle':'عنوان التاب (Title)','content.metaDesc':'وصف الميتا','content.logoText':'اسم الشعار في القائمة العلوية',
+  'content.introFirst':'الاسم الأول (شاشة البداية)','content.introLast':'الاسم الأخير (شاشة البداية)','content.introLabel':'تسمية شاشة البداية',
+  'content.badgeText':'نص الشارة العلوية','content.heroPre':'بداية العنوان','content.heroWord1':'كلمة مميزة 1','content.heroWord2':'كلمة مميزة 2',
+  'content.heroMid':'وسط العنوان','content.heroText':'الفقرة تحت العنوان',
+  'content.btnPrimaryText':'نص الزرار الأول','content.btnPrimaryLink':'رابط الزرار الأول','content.btnSecondaryText':'نص الزرار الثاني','content.btnSecondaryLink':'رابط الزرار الثاني',
+  'content.aboutHeading':'العنوان','content.p1':'فقرة 1','content.p2':'فقرة 2','content.aboutMissing':'تنبيه: بعض عناصر قسم About مش موجودة في الملف الحالي — الحقول دي هتتجاهل عند الحفظ.',
+  'content.contactPre':'بداية العنوان','content.contactHighlight':'الكلمة المميزة','content.contactDesc':'الوصف',
+  'content.whatsapp':'رابط واتساب','content.email':'الإيميل (بدون mailto:)','content.phone':'رقم الهاتف','content.phoneOptional':'غير مكتشف تلقائيًا — اختياري','content.linkedin':'رابط LinkedIn',
+  'content.footerLeft':'النص الأيسر (حقوق النشر)','content.footerRight':'النص الأيمن',
+  'content.colorPrimary':'اللون الرئيسي','content.colorSecondary':'اللون الثانوي','content.colorBg':'لون الخلفية','content.colorText':'لون النص','content.colorMuted':'لون النص الباهت',
+  'content.fontMain':'الخط الرئيسي للموقع','content.colorsHint':'التغييرات هتظهر في المعاينة الحية، وتتثبت على GitHub لما تنشر.',
+  'warn.noDoc':'لازم تحمّل الملف الأول','warn.noDocHint':'روح لقسم GitHub واتصل وحمّل index.html',
+  'projects.search':'ابحث في المشاريع...','projects.add':'إضافة مشروع',
+   'projects.details':'تفاصيل صفحة View','projects.detailsHint':'عدّل كل المحتوى الذي يظهر بعد الضغط على View Dashboard','projects.noDetails':'لا توجد صفحة View مرتبطة بهذا المشروع','projects.pageKicker':'عنوان القسم','projects.pageTitle':'عنوان صفحة المشروع','projects.pageDesc':'وصف صفحة المشروع','projects.pageTags':'وسوم صفحة المشروع','projects.challengeLabel':'عنوان قسم المشكلة','projects.challengeTitle':'عنوان المشكلة','projects.challengeText':'شرح المشكلة','projects.challengeNote':'ملاحظة المشكلة (اختياري)','projects.solutionLabel':'عنوان قسم الحل','projects.solutionTitle':'عنوان الحل','projects.solutionText':'شرح الحل','projects.solutionItems':'نقاط الحل (كل نقطة في سطر)','projects.liveLabel':'عنوان قسم الداشبورد','projects.liveTitle':'عنوان الداشبورد','projects.openText':'نص زر فتح الداشبورد','projects.openUrl':'رابط زر فتح الداشبورد','projects.iframeUrl':'صورة الداشبورد داخل الصفحة','projects.fallbackText':'نص رسالة عدم ظهور الداشبورد','projects.fallbackButton':'نص زر الداشبورد البديل','projects.fallbackUrl':'رابط الداشبورد البديل','projects.backText':'نص زر الرجوع','projects.backUrl':'رابط زر الرجوع','projects.contactText':'نص زر التواصل','projects.contactUrl':'رابط زر التواصل','projects.viewReady':'صفحة View متصلة وقابلة للتعديل',
+   'projects.backToList':'الرجوع للمشاريع','projects.tabDetails':'تفاصيل المشروع','projects.tabContent':'محتوى صفحة العرض','projects.tabImages':'الصور والوسائط','projects.tabSettings':'الإعدادات',
+   'projects.basicInfo':'المعلومات الأساسية','projects.basicInfoHint':'عدّل التفاصيل الأساسية اللي بتظهر في كارت المشروع وصفحته.',
+   'projects.subOverview':'نظرة عامة','projects.subChallenge':'تحدي العمل','projects.subSolution':'الحل','projects.subDashboard':'الداشبورد','projects.subButtons':'أزرار وروابط الصفحة',
+   'projects.imagesTitle':'صورة المعاينة','projects.imagesHint':'صورة الكارت اللي بتظهر في قائمة المشاريع وصفحة العرض.',
+   'projects.manage':'إدارة المشروع','projects.duplicate':'نسخ المشروع','projects.duplicateHint':'إنشاء نسخة كاملة من هذا المشروع','projects.duplicateBtn':'نسخ',
+   'projects.reorder':'الترتيب','projects.reorderHint':'تحريك المشروع لأعلى أو لأسفل في القائمة',
+   'projects.deleteTitle':'حذف المشروع','projects.deleteHint':'هذا الإجراء لا يمكن التراجع عنه','projects.deleteBtn':'حذف',
+   'projects.livePreview':'معاينة مباشرة','projects.livePreviewHint':'شوف شكل التغييرات على صفحة المشروع.',
+    'projects.fieldTitle':'العنوان','projects.fieldDesc':'الوصف','projects.fieldTags':'الوسوم / التصنيف','projects.fieldUrl':'رابط الداشبورد','projects.fieldButton':'نص الزرار','projects.fieldImage':'رابط صورة المعاينة','projects.uploadImage':'رفع الصورة',
+   'projects.published':'منشور','projects.draft':'مسودة','projects.editBtn':'تعديل','projects.noProjectsYet':'لا يوجد مشاريع بعد','projects.noProjectsHint':'دوس "إضافة مشروع" عشان تبدأ',
+   'top.preview':'معاينة',
+  'skills.search':'ابحث في المهارات...','skills.add':'إضافة مهارة',
+  'images.uploadNew':'رفع صورة جديدة','images.uploadHint':'بترفع مباشرة لمجلد images/ في المستودع عبر GitHub API','images.uploadBtn':'رفع الصورة',
+  'images.current':'صور المشاريع الحالية','images.currentHint':'الصور المستخدمة حاليًا في المشاريع — تقدر تنسخ المسار أو تشيل الصورة من المشروع',
+  'preview.refresh':'تحديث المعاينة','preview.openTab':'فتح في تاب جديد','preview.desktop':'ديسكتوب','preview.mobile':'موبايل',
+  'settings.panel':'إعدادات اللوحة','settings.dark':'الوضع الليلي','settings.darkHint':'وضع عرض لوحة التحكم نفسها',
+  'settings.reduceMotion':'تقليل الحركة','settings.reduceMotionHint':'يوقف أنيميشن الشاشة الافتتاحية والانتقالات',
+  'settings.motionIntensity':'شدة الحركة','settings.motionIntensityHint':'يتحكم بسرعة/كثافة تأثيرات اللوحة','settings.full':'كامل','settings.light':'خفيف',
+  'settings.language':'اللغة','settings.languageHint':'لغة عرض لوحة التحكم',
+  'settings.savedData':'بيانات محفوظة','settings.savedDataHint':'إعدادات GitHub (Owner/Repo/Branch/Path) والتوكن لو اخترت تحفظه','settings.clearAll':'مسح كل الإعدادات المحفوظة',
+  'account.title':'حساب المشرف','account.hint':'لازم كلمة المرور الحالية عشان تغيّر اسم المستخدم أو كلمة المرور',
+  'account.currentPass':'كلمة المرور الحالية','account.newUser':'اسم المستخدم الجديد','account.newPass':'كلمة المرور الجديدة','account.confirmPass':'تأكيد كلمة المرور الجديدة',
+  'account.save':'حفظ التغييرات','account.note':'اسم المستخدم وكلمة المرور الحاليان بيتخزنوا محليًا على هذا الجهاز فقط — دي حماية جانب المتصفح وليست Authentication حقيقي على سيرفر.',
+  'account.errCurrent':'كلمة المرور الحالية غير صحيحة','account.errMismatch':'كلمة المرور الجديدة وتأكيدها غير متطابقين','account.errEmpty':'أدخل اسم المستخدم الجديد وكلمة المرور الحالية على الأقل','account.saved':'تم حفظ بيانات الحساب — استخدمها في تسجيل الدخول القادم',
+  'backup.title':'نسخ احتياطي واستعادة','backup.hint':'صدّر نسخة من إعدادات اللوحة (اتصال GitHub بدون التوكن، اسم المستخدم، اللغة) أو استرجعها',
+  'backup.export':'تصدير نسخة احتياطية','backup.import':'استيراد / استعادة',
+  'backup.invalidFile':'الملف غير صالح — لازم يكون JSON من نسخة احتياطية لنفس اللوحة',
+  'backup.unsupportedVersion':'نسخة البيانات أحدث من الإصدار المدعوم في هذه اللوحة — التحديث مرفوض للحفاظ على سلامة البيانات',
+  'backup.confirmTitle':'تأكيد الاستعادة','backup.confirmMsg':'هيتم استبدال إعدادات اللوحة الحالية بالبيانات دي. هيتعمل نسخة أمان تلقائية من الإعدادات الحالية قبل الاستبدال. متأكد إنك عايز تكمل؟',
+  'backup.done':'تم استيراد النسخة الاحتياطية بنجاح','backup.exported':'تم تصدير النسخة الاحتياطية',
+  'audit.title':'سجل الأحداث','audit.hint':'آخر الأحداث المهمة في اللوحة — لا يتم تسجيل كلمات المرور أبدًا','audit.clear':'مسح السجل','audit.empty':'لا يوجد أحداث مسجلة',
+  'audit.login':'تسجيل دخول','audit.loginFailed':'محاولة دخول فاشلة','audit.logout':'تسجيل خروج','audit.dashboardEdit':'تعديل محتوى',
+  'audit.settingsChange':'تغيير إعدادات','audit.accountChange':'تغيير بيانات الحساب','audit.backup':'تصدير نسخة احتياطية','audit.restore':'استعادة نسخة احتياطية','audit.migration':'ترقية البيانات (Migration)',
+  'modal.cancel':'إلغاء','modal.confirm':'تأكيد',
+  'top.publishShort':'نشر التغييرات',
+  'stats.empty':'مفيش إحصائيات','stats.item':'إحصائية','stats.value':'الرقم','stats.label':'الوصف',
+  'skills.item':'مهارة','skills.icon':'أيقونة','skills.title':'العنوان','skills.desc':'الوصف / التصنيف','skills.percent':'النسبة %','skills.empty':'مفيش مهارات لسه','skills.emptyHint':'دوس إضافة مهارة عشان تبدأ',
+  'common.noResults':'مفيش نتائج','common.tryAgain':'جرب كلمة بحث تانية','images.empty':'مفيش صور مرتبطة بمشاريع حاليًا','images.emptyHint':'ارفع صورة وحطها في مشروع من قسم المشاريع','images.copyPath':'نسخ المسار','images.copied':'تم نسخ المسار','images.copyFail':'مش قادر أنسخ — انسخه يدوي: ',
+  'dash.eyebrow':'مركز تحكم البورتفوليو','dash.welcomeSub':'إليك ملخص سريع عن حالة البورتفوليو وآخر التغييرات.',
+  'dash.recentEyebrow':'آخر النشاطات','dash.viewAll':'عرض الكل','dash.overviewEyebrow':'نظرة عامة','dash.portfolioStatus':'حالة البورتفوليو',
+  'dash.overviewTab':'نظرة عامة','dash.detailsTab':'التفاصيل','dash.totalItems':'إجمالي العناصر','dash.start':'البداية','dash.now':'الآن',
+  'dash.quickEyebrow':'إجراءات سريعة','dash.systemEyebrow':'حالة النظام','dash.systemStatus':'حالة النظام','dash.portfolioAdmin':'لوحة إدارة البورتفوليو','dash.search':'ابحث في لوحة التحكم...',
+  'dash.ready':'جاهز للعمل','dash.connectedReady':'متصل وجاهز للنشر','dash.notConnected':'غير متصل','dash.connected':'متصل بـ GitHub'
+},
+en:{
+  'login.title':'Admin Login','login.sub':'Portfolio Control Panel','login.username':'Username','login.password':'Password','login.btn':'Log In',
+  'login.errEmpty':'Please enter your username and password','login.errWrong':'Incorrect username or password',
+  'header.title':'Portfolio Admin','header.sub':'Manage • Edit • Publish','header.role':'Administrator',
+  'brand.title':'Control Panel','brand.disconnected':'Disconnected','brand.connected':'Connected — file loaded',
+  'top.saveDraft':'Save Draft','top.publish':'Publish to GitHub','top.logout':'Log Out',
+  'nav.overview.label':'Overview','nav.overview.sub':'Quick summary of portfolio and connection status',
+  'nav.content.label':'Portfolio Content','nav.content.sub':'Manage text, colors and fonts',
+  'nav.projects.label':'Projects','nav.projects.sub':'Add, edit and reorder projects',
+  'nav.skills.label':'Skills','nav.skills.sub':'Manage the displayed skills list',
+  'nav.images.label':'Images','nav.images.sub':'Upload and manage project images',
+  'nav.preview.label':'Live Preview','nav.preview.sub':'See the site before publishing',
+  'nav.github.label':'GitHub','nav.github.sub':'Connect the repository and load/save the file',
+  'nav.settings.label':'Settings','nav.settings.sub':'Customize the panel, manage account and stored data',
+  'nav.more':'More',
+  'ov.quick':'Quick Actions','ov.quickHint':'Fast access to the most used tasks',
+  'ov.qaContent':'Edit Content','ov.qaAddProject':'Add Project','ov.qaAddSkill':'Add Skill','ov.qaImage':'Upload Image','ov.qaPreview':'Preview Site','ov.qaPublish':'Publish Changes',
+  'ov.activity':'Recent Activity','ov.lastLoad':'Last load from GitHub','ov.lastSave':'Last save','ov.connStatus':'Connection status',
+  'ov.nProjects':'Total Projects','ov.nSkills':'Total Skills','ov.nSections':'Portfolio Sections','ov.connLabel':'GitHub Connection',
+  'gh.connect':'Connect to GitHub','gh.connectHint':'Link the panel to your repository to load and save index.html',
+  'gh.owner':'Owner (username)','gh.repo':'Repository name','gh.filename':'File name','gh.branch':'Branch',
+  'gh.remember':'Remember token','gh.rememberHint':'Stored in localStorage on your device only',
+  'gh.warn':'Storing the token in the browser is a security risk — anyone using the same device/browser could access it. Use a limited-scope (fine-grained) token for this repository only, and leave "Remember token" off on shared devices.',
+  'gh.load':'Load File','gh.clearCreds':'Clear Connection Data','gh.reqStatus':'Request Status','gh.sha':'Current SHA',
+  'content.general':'General','content.hero':'Hero Section','content.stats':'Statistics','content.addStat':'Add Statistic',
+  'content.about':'About Section','content.contact':'Contact Section','content.footer':'Footer','content.colors':'Colors & Font',
+  'content.pageTitle':'Page Title (Title)','content.metaDesc':'Meta Description','content.logoText':'Logo text in top menu',
+  'content.introFirst':'First name (intro screen)','content.introLast':'Last name (intro screen)','content.introLabel':'Intro screen label',
+  'content.badgeText':'Top badge text','content.heroPre':'Heading start','content.heroWord1':'Highlighted word 1','content.heroWord2':'Highlighted word 2',
+  'content.heroMid':'Heading middle','content.heroText':'Paragraph under heading',
+  'content.btnPrimaryText':'Primary button text','content.btnPrimaryLink':'Primary button link','content.btnSecondaryText':'Secondary button text','content.btnSecondaryLink':'Secondary button link',
+  'content.aboutHeading':'Heading','content.p1':'Paragraph 1','content.p2':'Paragraph 2','content.aboutMissing':'Note: some About section elements are missing from the current file — these fields will be ignored when saving.',
+  'content.contactPre':'Heading start','content.contactHighlight':'Highlighted word','content.contactDesc':'Description',
+  'content.whatsapp':'WhatsApp link','content.email':'Email (without mailto:)','content.phone':'Phone number','content.phoneOptional':'Not auto-detected — optional','content.linkedin':'LinkedIn link',
+  'content.footerLeft':'Left text (copyright)','content.footerRight':'Right text',
+  'content.colorPrimary':'Primary color','content.colorSecondary':'Secondary color','content.colorBg':'Background color','content.colorText':'Text color','content.colorMuted':'Muted text color',
+  'content.fontMain':'Site main font','content.colorsHint':'Changes will appear in the live preview and are committed to GitHub when you publish.',
+  'warn.noDoc':'Load the file first','warn.noDocHint':'Go to the GitHub section, connect and load index.html',
+  'projects.search':'Search projects...','projects.add':'Add Project',
+   'projects.details':'View Page Details','projects.detailsHint':'Edit everything shown after opening View Dashboard','projects.noDetails':'No View page is linked to this project','projects.pageKicker':'Section kicker','projects.pageTitle':'Project page title','projects.pageDesc':'Project page description','projects.pageTags':'Project page tags','projects.challengeLabel':'Challenge section label','projects.challengeTitle':'Challenge title','projects.challengeText':'Challenge description','projects.challengeNote':'Challenge note (optional)','projects.solutionLabel':'Solution section label','projects.solutionTitle':'Solution title','projects.solutionText':'Solution description','projects.solutionItems':'Solution points (one per line)','projects.liveLabel':'Dashboard section label','projects.liveTitle':'Dashboard title','projects.openText':'Open dashboard button text','projects.openUrl':'Open dashboard button URL','projects.iframeUrl':'Dashboard image path','projects.fallbackText':'Fallback message','projects.fallbackButton':'Fallback button text','projects.fallbackUrl':'Fallback dashboard URL','projects.backText':'Back button text','projects.backUrl':'Back button URL','projects.contactText':'Contact button text','projects.contactUrl':'Contact button URL','projects.viewReady':'View page is connected and editable',
+   'projects.backToList':'Back to Projects','projects.tabDetails':'Project Details','projects.tabContent':'View Page Content','projects.tabImages':'Images & Media','projects.tabSettings':'Settings',
+   'projects.basicInfo':'Basic Information','projects.basicInfoHint':'Edit the main details shown in the project card and project page.',
+   'projects.subOverview':'Overview','projects.subChallenge':'Business Challenge','projects.subSolution':'Solution','projects.subDashboard':'Dashboard','projects.subButtons':'Page Buttons & Links',
+   'projects.imagesTitle':'Preview image','projects.imagesHint':'The image shown on the project card and project page.',
+   'projects.manage':'Manage Project','projects.duplicate':'Duplicate project','projects.duplicateHint':'Create a full copy of this project','projects.duplicateBtn':'Duplicate',
+   'projects.reorder':'Reorder','projects.reorderHint':'Move this project up or down in the list',
+   'projects.deleteTitle':'Delete project','projects.deleteHint':'This action cannot be undone','projects.deleteBtn':'Delete',
+   'projects.livePreview':'Live Preview','projects.livePreviewHint':'See how your changes will look on the project page.',
+    'projects.fieldTitle':'Title','projects.fieldDesc':'Description','projects.fieldTags':'Tags / categories','projects.fieldUrl':'Dashboard URL','projects.fieldButton':'Button text','projects.fieldImage':'Preview image path','projects.uploadImage':'Upload image',
+   'projects.published':'Published','projects.draft':'Draft','projects.editBtn':'Edit','projects.noProjectsYet':'No projects yet','projects.noProjectsHint':'Tap "Add project" to get started',
+   'top.preview':'Preview',
+  'skills.search':'Search skills...','skills.add':'Add Skill',
+  'images.uploadNew':'Upload New Image','images.uploadHint':'Uploads directly to the images/ folder in the repository via the GitHub API','images.uploadBtn':'Upload Image',
+  'images.current':'Current Project Images','images.currentHint':'Images currently used in projects — copy the path or remove the image from the project',
+  'preview.refresh':'Refresh Preview','preview.openTab':'Open in New Tab','preview.desktop':'Desktop','preview.mobile':'Mobile',
+  'settings.panel':'Panel Settings','settings.dark':'Dark Mode','settings.darkHint':'Display mode for the panel itself',
+  'settings.reduceMotion':'Reduce Motion','settings.reduceMotionHint':'Disables the intro animation and transitions',
+  'settings.motionIntensity':'Motion Intensity','settings.motionIntensityHint':'Controls the speed/density of panel effects','settings.full':'Full','settings.light':'Light',
+  'settings.language':'Language','settings.languageHint':'Display language of the control panel',
+  'settings.savedData':'Stored Data','settings.savedDataHint':'GitHub settings (Owner/Repo/Branch/Path) and token if you chose to save it','settings.clearAll':'Clear All Stored Settings',
+  'account.title':'Admin Account','account.hint':'The current password is required to change the username or password',
+  'account.currentPass':'Current Password','account.newUser':'New Username','account.newPass':'New Password','account.confirmPass':'Confirm New Password',
+  'account.save':'Save Changes','account.note':'The current username and password are stored locally on this device only — this is browser-side protection, not real server authentication.',
+  'account.errCurrent':'Current password is incorrect','account.errMismatch':'New password and confirmation do not match','account.errEmpty':'Enter at least the new username and current password','account.saved':'Account details saved — use them on your next login',
+  'backup.title':'Backup & Restore','backup.hint':'Export a backup of panel settings (GitHub connection without the token, username, language) or restore one',
+  'backup.export':'Export Backup','backup.import':'Import / Restore',
+  'backup.invalidFile':'Invalid file — must be a JSON backup from this same panel',
+  'backup.unsupportedVersion':'This backup is from a newer, unsupported version — the restore was rejected to protect your data',
+  'backup.confirmTitle':'Confirm Restore','backup.confirmMsg':'This will replace the current panel settings with this backup data. A safety backup of your current settings will be made automatically first. Continue?',
+  'backup.done':'Backup imported successfully','backup.exported':'Backup exported',
+  'audit.title':'Event Log','audit.hint':'Recent important panel events — passwords are never logged','audit.clear':'Clear Log','audit.empty':'No events logged yet',
+  'audit.login':'Login','audit.loginFailed':'Failed login attempt','audit.logout':'Logout','audit.dashboardEdit':'Content edit',
+  'audit.settingsChange':'Settings change','audit.accountChange':'Account change','audit.backup':'Backup exported','audit.restore':'Backup restored','audit.migration':'Data migration',
+  'modal.cancel':'Cancel','modal.confirm':'Confirm',
+  'top.publishShort':'Publish Changes',
+  'stats.empty':'No statistics yet','stats.item':'Statistic','stats.value':'Value','stats.label':'Description',
+  'skills.item':'Skill','skills.icon':'Icon','skills.title':'Title','skills.desc':'Description / Category','skills.percent':'Percent %','skills.empty':'No skills yet','skills.emptyHint':'Add a skill to get started',
+  'common.noResults':'No results','common.tryAgain':'Try another search','images.empty':'No project images yet','images.emptyHint':'Upload an image and assign it to a project','images.copyPath':'Copy path','images.copied':'Path copied','images.copyFail':'Could not copy — copy it manually: ',
+  'dash.eyebrow':'Portfolio Control Center','dash.welcomeSub':'Here is a quick summary of your portfolio and recent changes.',
+  'dash.recentEyebrow':'RECENT ACTIVITY','dash.viewAll':'View All','dash.overviewEyebrow':'PORTFOLIO OVERVIEW','dash.portfolioStatus':'Portfolio Status',
+  'dash.overviewTab':'Overview','dash.detailsTab':'Details','dash.totalItems':'Total items','dash.start':'Start','dash.now':'Now',
+  'dash.quickEyebrow':'QUICK ACTIONS','dash.systemEyebrow':'SYSTEM STATUS','dash.systemStatus':'System Status','dash.portfolioAdmin':'Portfolio Admin','dash.search':'Search the control panel...',
+  'dash.ready':'Ready to work','dash.connectedReady':'Connected & ready to publish','dash.notConnected':'Not connected','dash.connected':'Connected to GitHub'
+}
+};
+let currentLang=DataService.get('adminLang','ar');
+function t(key,fallback){const d=I18N[currentLang]||I18N.ar;return d[key]!==undefined?d[key]:(fallback!==undefined?fallback:key);}
+function applyI18n(){
+  document.documentElement.lang=currentLang;
+  document.documentElement.dir=currentLang==='ar'?'rtl':'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(I18N[currentLang]&&I18N[currentLang][k]!==undefined)el.textContent=I18N[currentLang][k];});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.getAttribute('data-i18n-ph');if(I18N[currentLang]&&I18N[currentLang][k]!==undefined)el.placeholder=I18N[currentLang][k];});
+  document.querySelectorAll('.lang-switch').forEach(sw=>{sw.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));});
+  if(typeof currentPage!=='undefined'&&typeof NAV!=='undefined'){const n=NAV.find(x=>x.id===currentPage);if(n){$('pageTitle').textContent=t('nav.'+n.key+'.label',n.label);$('pageSub').textContent=t('nav.'+n.key+'.sub',n.sub);}}
+  if(typeof updateConnBadges==='function')updateConnBadges();
+  if(typeof renderAuditLog==='function')renderAuditLog();
+}
+function setLang(lang){
+  if(lang!=='ar'&&lang!=='en')return;
+  currentLang=lang;
+  DataService.set('adminLang',lang);
+  applyI18n();
+  if(typeof renderProjects==='function'&&doc)renderProjects();
+  if(typeof renderSkills==='function'&&doc)renderSkills();
+  if(typeof renderStats==='function'&&doc)renderStats();
+  if(typeof renderOverview==='function')renderOverview();
+}
+document.querySelectorAll('.lang-switch').forEach(sw=>{
+  sw.querySelectorAll('button[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+});
+document.documentElement.lang=currentLang;
+document.documentElement.dir=currentLang==='ar'?'rtl':'ltr';
+document.querySelectorAll('.lang-switch').forEach(sw=>{sw.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));});
+$('loginUser').placeholder=t('login.username');
+
+/* ============ AUTH (frontend-only protection — static/GitHub Pages mode) ============ */
+const ACCOUNT_KEY='adminAccount';
+const SESSION_KEY='adminSession';
+async function ensureDefaultAccount(){
+  const acc=DataService.get(ACCOUNT_KEY);
+  if(!acc||!acc.username||!acc.passHash){
+    const passHash=await sha256Hex('admin1');
+    DataService.set(ACCOUNT_KEY,{username:'admin',passHash});
+  }
+}
+function isLoggedIn(){return sessionStorage.getItem(SESSION_KEY)==='1';}
+function setLoggedIn(username){sessionStorage.setItem(SESSION_KEY,'1');sessionStorage.setItem(SESSION_KEY+'_user',username);}
+function clearLoggedIn(){sessionStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY+'_user');}
+
+function showLoginError(msg){
+  const e=$('loginError');e.textContent=msg;e.classList.add('show');
+  const card=$('loginCard');card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+}
+function hideLoginError(){$('loginError').classList.remove('show');}
+
+async function attemptLogin(){
+  const u=$('loginUser').value.trim();
+  const p=$('loginPass').value;
+  if(!u||!p){showLoginError(t('login.errEmpty'));return;}
+  await ensureDefaultAccount();
+  const acc=DataService.get(ACCOUNT_KEY);
+  const pHash=await sha256Hex(p);
+  if(acc&&u===acc.username&&pHash===acc.passHash){
+    hideLoginError();
+    setLoggedIn(u);
+    logEvent('login',u);
+    $('loginScreen').classList.add('hide');
+    $('loginUser').value='';$('loginPass').value='';
+    startAppAfterLogin();
+  }else{
+    logEvent('loginFailed',u||'—');
+    showLoginError(t('login.errWrong'));
+  }
+}
+$('loginBtn').addEventListener('click',attemptLogin);
+$('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')attemptLogin();});
+$('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')attemptLogin();});
+$('loginEye').addEventListener('click',()=>{const i=$('loginPass');i.type=i.type==='password'?'text':'password';});
+
+$('btnLogout').addEventListener('click',async()=>{
+  if(!(await confirmModal(t('modal.confirm'),t('top.logout')+'?')))return;
+  logEvent('logout');
+  clearLoggedIn();
+  location.reload();
+});
+
+/* ============ NAV DEFINITION ============ */
+const NAV=[
+  {id:'overview',label:'نظرة عامة',ic:'•',sub:'ملخص سريع لحالة البورتفوليو والاتصال',key:'overview'},
+  {id:'content',label:'محتوى البورتفوليو',ic:'•',sub:'التحكم في النصوص والألوان والخط',key:'content'},
+  {id:'projects',label:'المشاريع',ic:'•',sub:'إضافة وتعديل وترتيب المشاريع',key:'projects'},
+  {id:'skills',label:'المهارات',ic:'•',sub:'إدارة قائمة المهارات المعروضة',key:'skills'},
+  {id:'images',label:'الصور',ic:'•',sub:'رفع وإدارة صور المشاريع',key:'images'},
+  {id:'preview',label:'معاينة مباشرة',ic:'•',sub:'شوف شكل الموقع قبل النشر',key:'preview'},
+  {id:'github',label:'GitHub',ic:'•',sub:'الاتصال بالمستودع وتحميل/حفظ الملف',key:'github'},
+  {id:'settings',label:'الإعدادات',ic:'•',sub:'تخصيص اللوحة ومسح البيانات المحفوظة وإدارة الحساب',key:'settings'},
+];
+const MOBILE_PRIMARY=['overview','content','projects','github'];
+
+function buildNav(){
+  const sideEl=$('navList');
+  sideEl.innerHTML=NAV.map(n=>`<div class="nav-item" data-nav="${n.id}"><span class="ic">${n.ic}</span><span data-i18n="nav.${n.key}.label">${n.label}</span></div>`).join('');
+  sideEl.querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',()=>goPage(el.dataset.nav)));
+
+  const mEl=$('mobileNavInner');
+  mEl.innerHTML=MOBILE_PRIMARY.map(id=>{const n=NAV.find(x=>x.id===id);return `<div class="mnav-item" data-nav="${id}"><span class="ic">${n.ic}</span><span data-i18n="nav.${n.key}.label">${n.label}</span></div>`;}).join('')
+    +`<div class="mnav-item" id="mnavMore"><span class="ic">${ic('menu')}</span><span data-i18n="nav.more">المزيد</span></div>`;
+  mEl.querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',()=>goPage(el.dataset.nav)));
+  $('mnavMore').addEventListener('click',openMoreSheet);
+
+  $('moreSheetList').innerHTML=NAV.map(n=>`<div class="nav-item" data-nav="${n.id}" style="padding:13px 12px"><span class="ic">${n.ic}</span><span data-i18n="nav.${n.key}.label">${n.label}</span></div>`).join('');
+  $('moreSheetList').querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',()=>{goPage(el.dataset.nav);closeMoreSheet();}));
+  applyI18n();
+}
+function openMoreSheet(){$('moreSheet').classList.add('show');$('sheetBackdrop').classList.add('show');}
+function closeMoreSheet(){$('moreSheet').classList.remove('show');$('sheetBackdrop').classList.remove('show');}
+$('sheetBackdrop').addEventListener('click',closeMoreSheet);
+
+let currentPage='overview';
+function goPage(id){
+  currentPage=id;
+  const n=NAV.find(x=>x.id===id);
+  $('pageTitle').textContent=t('nav.'+n.key+'.label',n.label);
+  $('pageSub').textContent=t('nav.'+n.key+'.sub',n.sub);
+  document.querySelectorAll('.section-page').forEach(s=>s.classList.toggle('active',s.dataset.page===id));
+  document.querySelectorAll('#navList .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.nav===id));
+  document.querySelectorAll('.mobile-nav .mnav-item[data-nav]').forEach(el=>el.classList.toggle('active',el.dataset.nav===id));
+  if(id==='projects'){currentProjIdx=null;$('projDetailView').style.display='none';$('projListView').style.display='block';}
+  if(id==='preview'&&doc)refreshPreviewFrame();
+  window.scrollTo({top:0,behavior:'auto'});
+}
+
+/* ============ TOASTS ============ */
+function toast(msg,type='info',timeout=3600){
+  const icons={ok:'✓',err:'✕',warn:'⚠',info:'ℹ'};
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.innerHTML=`<span>${icons[type]||''}</span><span>${msg}</span><button class="close">✕</button>`;
+  t.querySelector('.close').addEventListener('click',()=>t.remove());
+  $('toastWrap').appendChild(t);
+  if(timeout)setTimeout(()=>t.remove(),timeout);
+}
+
+/* ============ CONFIRM MODAL ============ */
+let modalResolve=null;
+function confirmModal(title,msg){
+  $('modalTitle').textContent=title;$('modalMsg').textContent=msg;
+  $('modalOverlay').classList.add('show');
+  return new Promise(res=>{modalResolve=res;});
+}
+$('modalCancel').addEventListener('click',()=>{$('modalOverlay').classList.remove('show');if(modalResolve)modalResolve(false);});
+$('modalConfirm').addEventListener('click',()=>{$('modalOverlay').classList.remove('show');if(modalResolve)modalResolve(true);});
+$('modalOverlay').addEventListener('click',e=>{if(e.target.id==='modalOverlay'){$('modalOverlay').classList.remove('show');if(modalResolve)modalResolve(false);}});
+
+/* ============ STATE ============ */
+let doc=null,sha=null,dirty=false,lastLoaded=null,lastSaved=null;
+function markDirty(){dirty=true;renderOverview();}
+
+function status(msg,type){const s=$('status');s.textContent=msg;s.className=type;s.style.display='block';if(type!=='loading')setTimeout(()=>s.style.display='none',3800);}
+
+/* ============ B64 / API HELPERS ============ */
+function b64Decode(str){try{return decodeURIComponent(atob(str.replace(/\n/g,'')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));}catch(e){throw new Error('فشل فك تشفير Base64 — الملف ممكن يكون تالف');}}
+function b64Encode(str){return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,(m,p)=>String.fromCharCode('0x'+p)));}
+function cfgValid(){return $('cfgOwner').value.trim()&&$('cfgRepo').value.trim()&&$('cfgPath').value.trim()&&$('cfgBranch').value.trim();}
+function apiUrl(path){return `https://api.github.com/repos/${encodeURIComponent($('cfgOwner').value.trim())}/${encodeURIComponent($('cfgRepo').value.trim())}/contents/${path||$('cfgPath').value.trim()}`;}
+function headers(){return{Authorization:`Bearer ${$('cfgToken').value.trim()}`,Accept:'application/vnd.github+json'};}
+async function githubError(res){
+  let body='';try{const j=await res.json();body=j.message||'';}catch(e){}
+  if(res.status===401)return'التوكن غير صالح أو منتهي الصلاحية';
+  if(res.status===404)return'المستودع أو الملف أو الـ Branch مش موجود — تأكد من البيانات';
+  if(res.status===403)return'ممنوع الوصول — تأكد من صلاحيات التوكن';
+  if(res.status===409)return'تعارض SHA — حمّل الملف تاني قبل ما تحفظ';
+  if(res.status===422)return'بيانات غير صالحة: '+body;
+  return `خطأ (${res.status}): ${body||'غير معروف'}`;
+}
+
+/* ============ DOM HELPERS (index.html) ============ */
+function el1(sel){return doc?doc.querySelector(sel):null;}
+function elN(sel){return doc?[...doc.querySelectorAll(sel)]:[];}
+function getText(sel){const e=el1(sel);return e?e.textContent:'';}
+function setText(sel,val){const e=el1(sel);if(e)e.textContent=val;}
+function getAttr(sel,attr){const e=el1(sel);return e?(e.getAttribute(attr)||''):'';}
+function setAttr(sel,attr,val){const e=el1(sel);if(e)e.setAttribute(attr,val);}
+function getChildText(sel,idx){const e=el1(sel);return(e&&e.childNodes[idx])?e.childNodes[idx].textContent:'';}
+function setChildText(sel,idx,val){const e=el1(sel);if(e&&e.childNodes[idx])e.childNodes[idx].textContent=val;}
+function getNth(sel,idx,attr){const e=elN(sel)[idx];if(!e)return'';return attr?(e.getAttribute(attr)||''):e.textContent;}
+function setNth(sel,idx,val,attr){const e=elN(sel)[idx];if(!e)return;if(attr)e.setAttribute(attr,val);else e.textContent=val;}
+function esc(s){return(s||'').replace(/"/g,'&quot;');}
+function exists(sel){return !!el1(sel);}
+
+function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result.split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});}
+async function uploadImageFile(file,onStatus){
+  if(!cfgValid()||!$('cfgToken').value.trim())throw new Error('اتصل بـ GitHub الأول من قسم GitHub');
+  if(file.size>4*1024*1024)onStatus&&onStatus('تحذير: الصورة كبيرة (>4MB) — الرفع ممكن ياخد وقت');
+  const b64=await fileToBase64(file);
+  const safeName=Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9.\-_]/g,'_');
+  const path='images/'+safeName;
+  const res=await fetch(apiUrl(path),{method:'PUT',headers:{...headers(),'Content-Type':'application/json'},body:JSON.stringify({message:'رفع صورة عبر لوحة التحكم',content:b64,branch:$('cfgBranch').value.trim()})});
+  if(!res.ok)throw new Error(await githubError(res));
+  return path;
+}
+
+/* ---------- colors / font ---------- */
+function getCssVar(name){const s=el1('style');if(!s)return'';const m=s.textContent.match(new RegExp('--'+name+':([^;]+);'));return m?m[1].trim():'';}
+function setCssVar(name,val){const s=el1('style');if(!s)return;const re=new RegExp('(--'+name+':)([^;]+)(;)');if(re.test(s.textContent))s.textContent=s.textContent.replace(re,'$1'+val+'$3');}
+function getFont(){const s=el1('style');if(!s)return'Inter';const m=s.textContent.match(/font-family:"([^"]+)"/);return m?m[1]:'Inter';}
+function setFont(name){
+  const s=el1('style');
+  if(s)s.textContent=s.textContent.replace(/font-family:"[^"]+"/,'font-family:"'+name+'"');
+  const link=elN('link[href*="fonts.googleapis.com"]').pop();
+  if(link){const href=link.getAttribute('href');link.setAttribute('href',href.replace(/family=[^&:]+/,'family='+encodeURIComponent(name).replace(/%20/g,'+')));}
+}
+
+/* ============ LOAD FROM GITHUB ============ */
+$('loadBtn').addEventListener('click',async()=>{
+  if(!cfgValid()){toast('كمّل بيانات الاتصال الأول (Owner / Repo / Path / Branch)','warn');return;}
+  if(!$('cfgToken').value.trim()){toast('محتاج تدخل Personal Access Token','warn');return;}
+  CFG_KEYS.forEach(k=>localStorage.setItem(k,$(k).value));
+  if($('rememberToken').checked)localStorage.setItem('cfgToken',$('cfgToken').value);else localStorage.removeItem('cfgToken');
+  $('loadBtn').disabled=true;$('loadBtn').innerHTML='<span class="spinner"></span> جاري التحميل...';
+  status('جاري تحميل الملف...','loading');$('stGet').textContent='جاري الطلب...';
+  try{
+    const res=await fetch(`${apiUrl()}?ref=${encodeURIComponent($('cfgBranch').value.trim())}`,{headers:headers()});
+    if(!res.ok)throw new Error(await githubError(res));
+    const data=await res.json();
+    sha=data.sha;
+    doc=new DOMParser().parseFromString(b64Decode(data.content),'text/html');
+    populateForm();
+    lastLoaded=new Date();
+    dirty=false;
+    toast('تم تحميل الملف بنجاح ✓','ok');
+    status('تم تحميل الملف بنجاح ✓','ok');
+    $('stGet').textContent='نجح ✓';$('stSha').textContent=sha?sha.slice(0,10)+'…':'—';
+    ['content','projects','skills','images','preview'].forEach(showBody);
+    renderOverview();
+  }catch(e){
+    console.error(e);
+    toast('فشل التحميل: '+e.message,'err',5500);
+    status('فشل التحميل: '+e.message,'err');
+    $('stGet').textContent='فشل: '+e.message;
+  }finally{
+    $('loadBtn').disabled=false;$('loadBtn').innerHTML='تحميل الملف';
+    updateConnBadges();
+  }
+});
+function showBody(page){
+  const map={content:['noDocWarnContent','contentBody'],projects:['noDocWarnProjects','projectsBody'],skills:['noDocWarnSkills','skillsBody'],images:['noDocWarnImages','imagesBody'],preview:['noDocWarnPreview','previewBody']};
+  const[warnId,bodyId]=map[page];
+  $(warnId).style.display='none';$(bodyId).style.display='block';
+}
+function updateConnBadges(){
+  const connected=!!(doc&&sha);
+  $('sideDot').style.background=connected?'var(--green)':'var(--red)';
+  $('sideDot').style.boxShadow=connected?'0 0 10px var(--green)':'0 0 10px var(--red)';
+  $('sideConnLabel').textContent=connected?t('brand.connected'):t('brand.disconnected');
+  const ac=$('actConn');
+  ac.className='badge-status '+(connected?'connected':'disconnected');
+  ac.innerHTML=`<i class="dot"></i><span>${connected?t('brand.connected'):t('brand.disconnected')}</span>`;
+}
+
+$('tokEye').addEventListener('click',()=>{const i=$('cfgToken');i.type=i.type==='password'?'text':'password';});
+$('clearCredsBtn').addEventListener('click',async()=>{
+  if(!(await confirmModal(t('gh.clearCreds'),currentLang==='ar'?'هيتم مسح التوكن والبيانات المحفوظة من هذا المتصفح. متأكد؟':'This will clear the token and saved connection data from this browser. Are you sure?')))return;
+  ['cfgOwner','cfgRepo','cfgPath','cfgBranch','cfgToken'].forEach(k=>localStorage.removeItem(k));
+  $('cfgToken').value='';
+  logEvent('settingsChange',currentLang==='ar'?'مسح بيانات اتصال GitHub':'Cleared GitHub connection data');
+  toast(currentLang==='ar'?'تم مسح بيانات الاتصال':'Connection data cleared','ok');
+});
+$('clearAllSettings').addEventListener('click',async()=>{
+  if(!(await confirmModal(t('settings.clearAll'),currentLang==='ar'?'هيتم مسح كل الإعدادات المحفوظة في هذا المتصفح بما فيها التوكن وبيانات الحساب. الإجراء ده لا يمكن التراجع عنه.':'This will clear all settings saved in this browser, including the token and account data. This action cannot be undone.')))return;
+  localStorage.clear();
+  toast(currentLang==='ar'?'تم مسح كل الإعدادات المحفوظة':'All stored settings cleared','ok');
+  setTimeout(()=>location.reload(),900);
+});
+
+/* ============ ACCOUNT SETTINGS ============ */
+function renderAccountFormDefaults(){
+  const acc=DataService.get(ACCOUNT_KEY);
+  if(acc&&acc.username)$('accNewUser').placeholder=acc.username;
+}
+['accCurEye','accNewEye','accConfEye'].forEach((id,i)=>{
+  const target=['accCurrentPass','accNewPass','accConfirmPass'][i];
+  $(id).addEventListener('click',()=>{const inp=$(target);inp.type=inp.type==='password'?'text':'password';});
+});
+function showAccError(msg){$('accError').textContent=msg;$('accError').classList.add('show');}
+function hideAccError(){$('accError').classList.remove('show');}
+$('accSaveBtn').addEventListener('click',async()=>{
+  hideAccError();
+  const curPass=$('accCurrentPass').value;
+  const newUser=$('accNewUser').value.trim();
+  const newPass=$('accNewPass').value;
+  const confPass=$('accConfirmPass').value;
+  if(!curPass||!newUser){showAccError(t('account.errEmpty'));return;}
+  const acc=DataService.get(ACCOUNT_KEY);
+  const curHash=await sha256Hex(curPass);
+  if(!acc||curHash!==acc.passHash){showAccError(t('account.errCurrent'));return;}
+  if(newPass||confPass){
+    if(newPass!==confPass){showAccError(t('account.errMismatch'));return;}
+  }
+  const updated={username:newUser,passHash:newPass?await sha256Hex(newPass):acc.passHash};
+  DataService.set(ACCOUNT_KEY,updated);
+  $('accCurrentPass').value='';$('accNewPass').value='';$('accConfirmPass').value='';
+  $('accNewUser').value='';$('accNewUser').placeholder=updated.username;
+  sessionStorage.setItem(SESSION_KEY+'_user',updated.username);
+  logEvent('accountChange',currentLang==='ar'?'تحديث اسم المستخدم/كلمة المرور':'Username/password updated');
+  toast(t('account.saved'),'ok');
+});
+
+/* ============ BACKUP / RESTORE ============ */
+const BACKUP_APP='portfolio-admin-panel';
+const SCHEMA_VERSION=1;
+function migrateBackup(data){
+  // Forward-compatible migration hook: bump SCHEMA_VERSION and add
+  // a case here whenever the backup shape changes.
+  if(data.schemaVersion===SCHEMA_VERSION)return data;
+  if(data.schemaVersion<SCHEMA_VERSION){
+    // No prior schema versions to migrate from yet.
+    data.schemaVersion=SCHEMA_VERSION;
+    return data;
+  }
+  throw new Error(t('backup.unsupportedVersion'));
+}
+function buildBackupObject(){
+  const acc=DataService.get(ACCOUNT_KEY,{});
+  return{
+    app:BACKUP_APP,
+    version:'1.0.0',
+    schemaVersion:SCHEMA_VERSION,
+    timestamp:new Date().toISOString(),
+    settings:{
+      cfgOwner:$('cfgOwner').value.trim(),
+      cfgRepo:$('cfgRepo').value.trim(),
+      cfgPath:$('cfgPath').value.trim(),
+      cfgBranch:$('cfgBranch').value.trim()
+    },
+    account:{username:acc.username||'admin'},
+    preferences:{
+      language:currentLang,
+      adminDark:$('adminDark').checked,
+      reducedMotion:$('reducedMotion').checked,
+      motionIntensity:$('motionIntensity').value
+    }
+  };
+}
+function downloadJSON(obj,filename){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+$('exportBackupBtn').addEventListener('click',()=>{
+  const backup=buildBackupObject();
+  downloadJSON(backup,'admin-panel-backup-'+new Date().toISOString().slice(0,10)+'.json');
+  logEvent('backup');
+  $('backupStatus').textContent=t('backup.exported');
+  toast(t('backup.exported'),'ok');
+});
+function validateBackupShape(data){
+  if(!data||typeof data!=='object')return false;
+  if(data.app!==BACKUP_APP)return false;
+  if(typeof data.schemaVersion!=='number')return false;
+  if(!data.settings||typeof data.settings!=='object')return false;
+  return true;
+}
+$('importBackupBtn').addEventListener('click',()=>$('restoreFileInput').click());
+$('restoreFileInput').addEventListener('change',async()=>{
+  const file=$('restoreFileInput').files[0];
+  $('restoreFileInput').value='';
+  if(!file)return;
+  let data;
+  try{
+    const text=await file.text();
+    data=JSON.parse(text);
+  }catch(e){
+    $('backupStatus').textContent=t('backup.invalidFile');
+    toast(t('backup.invalidFile'),'err');
+    return;
+  }
+  if(!validateBackupShape(data)){
+    $('backupStatus').textContent=t('backup.invalidFile');
+    toast(t('backup.invalidFile'),'err');
+    return;
+  }
+  try{
+    data=migrateBackup(data);
+  }catch(e){
+    $('backupStatus').textContent=e.message;
+    toast(e.message,'err');
+    return;
+  }
+  const s=data.settings||{};
+  const previewMsg=(currentLang==='ar'
+    ?`سيتم تحديث: Owner=${s.cfgOwner||'—'}, Repo=${s.cfgRepo||'—'}, Branch=${s.cfgBranch||'—'}, اسم المستخدم=${data.account?data.account.username:'—'}, اللغة=${data.preferences?data.preferences.language:'—'}.\n\n`
+    :`This will update: Owner=${s.cfgOwner||'—'}, Repo=${s.cfgRepo||'—'}, Branch=${s.cfgBranch||'—'}, Username=${data.account?data.account.username:'—'}, Language=${data.preferences?data.preferences.language:'—'}.\n\n`)
+    +t('backup.confirmMsg');
+  if(!(await confirmModal(t('backup.confirmTitle'),previewMsg)))return;
+
+  // Safety backup of current settings before any destructive change
+  const safety=buildBackupObject();
+  DataService.set('lastSafetyBackup',safety);
+
+  try{
+    if(s.cfgOwner!==undefined)$('cfgOwner').value=s.cfgOwner;
+    if(s.cfgRepo!==undefined)$('cfgRepo').value=s.cfgRepo;
+    if(s.cfgPath!==undefined)$('cfgPath').value=s.cfgPath;
+    if(s.cfgBranch!==undefined)$('cfgBranch').value=s.cfgBranch;
+    CFG_KEYS.forEach(k=>localStorage.setItem(k,$(k).value));
+    if(data.account&&data.account.username){
+      const acc=DataService.get(ACCOUNT_KEY,{});
+      DataService.set(ACCOUNT_KEY,{username:data.account.username,passHash:acc.passHash});
+    }
+    if(data.preferences){
+      if(data.preferences.language)setLang(data.preferences.language);
+      if(typeof data.preferences.adminDark==='boolean'){$('adminDark').checked=data.preferences.adminDark;$('adminDark').dispatchEvent(new Event('change'));}
+      if(typeof data.preferences.reducedMotion==='boolean'){$('reducedMotion').checked=data.preferences.reducedMotion;$('reducedMotion').dispatchEvent(new Event('change'));}
+      if(data.preferences.motionIntensity)$('motionIntensity').value=data.preferences.motionIntensity;
+    }
+    logEvent('restore',file.name);
+    $('backupStatus').textContent=t('backup.done');
+    toast(t('backup.done'),'ok');
+  }catch(e){
+    // Roll back to the safety backup if something went wrong mid-restore
+    console.error(e);
+    toast((currentLang==='ar'?'فشلت الاستعادة، لم تفقد بياناتك الحالية: ':'Restore failed, your current data is intact: ')+e.message,'err',6000);
+  }
+});
+
+/* ============ AUDIT LOG UI ============ */
+$('clearAuditBtn').addEventListener('click',async()=>{
+  if(!(await confirmModal(t('audit.clear'),currentLang==='ar'?'هيتم مسح كل الأحداث المسجلة. متأكد؟':'This will clear all logged events. Are you sure?')))return;
+  DataService.set(AUDIT_KEY,[]);
+  renderAuditLog();
+});
+
+/* ============ POPULATE FORM ============ */
+function populateForm(){
+  $('f_title').value=getText('title');
+  $('f_metaDesc').value=getAttr('meta[name="description"]','content');
+  $('f_logoText').value=getChildText('.logo',0);
+  $('f_introLabel').value=getText('.intro-label');
+  $('f_introFirst').value=getText('.intro-name .first');
+  $('f_introLast').value=getText('.intro-name .last');
+  const badge=el1('.badge');
+  $('f_badgeText').value=badge?badge.childNodes[badge.childNodes.length-1].textContent.trim():'';
+  $('f_heroPre').value=getChildText('.hero h1',0).trim();
+  $('f_heroWord1').value=getNth('.hero h1 .gradient',0);
+  $('f_heroMid').value=getChildText('.hero h1',2).trim();
+  $('f_heroWord2').value=getNth('.hero h1 .gradient',1);
+  $('f_heroText').value=getText('.hero-text');
+  $('f_btnPrimary').value=getText('.hero .btn-primary').trim();
+  $('f_btnPrimaryLink').value=getAttr('.hero .btn-primary','href');
+  $('f_btnSecondary').value=getText('.hero .btn-secondary').trim();
+  $('f_btnSecondaryLink').value=getAttr('.hero .btn-secondary','href');
+  $('f_kpi1').value=getNth('.kpi strong',0);
+  $('f_kpi2').value=getNth('.kpi strong',1);
+  $('f_kpi3').value=getNth('.kpi strong',2);
+  $('f_aboutHeading').value=getText('.about-text h2');
+  $('f_aboutP1').value=getNth('.about-text p',0);
+  $('f_aboutP2').value=getNth('.about-text p',1);
+  $('aboutMissingWarn').style.display=exists('.about-text')?'none':'block';
+  $('f_contactKicker').value=getText('.contact-box .kicker');
+  $('f_contactPre').value=getChildText('.contact-box h2',0).trim();
+  $('f_contactHighlight').value=getText('.contact-box h2 .gradient');
+  $('f_contactDesc').value=getText('.contact-box p');
+  const cBtns=elN('.contact-buttons a');
+  $('f_whatsapp').value=cBtns[0]?(cBtns[0].getAttribute('href')||''):'';
+  $('f_email').value=cBtns[1]?(cBtns[1].getAttribute('href')||'').replace('mailto:',''):'';
+  $('f_linkedin').value=cBtns[2]?(cBtns[2].getAttribute('href')||''):'';
+  $('f_phone').value='';
+  $('f_footerLeft').value=getNth('.footer-inner span',0);
+  $('f_footerRight').value=getNth('.footer-inner span',1);
+
+  const toHex=v=>{v=(v||'').trim();if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v))return v;return'#000000';};
+  $('f_colorBlue').value=toHex(getCssVar('blue'));
+  $('f_colorCyan').value=toHex(getCssVar('cyan'));
+  $('f_colorBg').value=toHex(getCssVar('bg'));
+  $('f_colorText').value=toHex(getCssVar('text'));
+  $('f_colorMuted').value=toHex(getCssVar('muted'));
+  $('f_font').value=getFont()||'Inter';
+
+  renderStats();renderProjects();renderSkills();renderImages();
+  document.querySelectorAll('#contentBody input,#contentBody textarea,#contentBody select').forEach(i=>i.addEventListener('input',markDirty));
+}
+
+/* ---------- generic move helper ---------- */
+function moveInList(containerSel,itemsSel,idx,dir,rerenderFn,renumberFn){
+  applyFormToDoc();
+  const container=el1(containerSel);
+  const nodes=elN(itemsSel);
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=nodes.length)return;
+  const a=nodes[idx],b=nodes[newIdx];
+  if(dir<0)container.insertBefore(a,b);else container.insertBefore(a,b.nextSibling);
+  if(renumberFn)renumberFn();
+  rerenderFn();markDirty();
+}
+
+/* ---------- STATS ---------- */
+function renderStats(){
+  const wrap=$('statsWrap');wrap.innerHTML='';
+  const list=elN('.stats .stat');
+  if(!list.length){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('chart')}</span><b>${t('stats.empty','No statistics yet')}</b><small>${t('content.addStat','Add Statistic')}</small></div>`;}
+  list.forEach((elm,i)=>{
+    const counter=elm.querySelector('.counter'),label=elm.querySelector('span');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<div class="item-head"><h4>${t('stats.item','Statistic')} ${i+1}</h4><div class="item-actions">
+    <button class="btn-icon" data-move-stat="${i}" data-dir="-1" type="button">↑</button>
+    <button class="btn-icon" data-move-stat="${i}" data-dir="1" type="button">↓</button>
+    <button class="btn-del" data-del-stat="${i}" type="button">✕</button></div></div>
+    <div class="row"><div><label>${t('stats.value','Value')}</label><input data-stat="${i}" data-f="val" value="${counter?counter.dataset.target:''}"></div>
+    <div><label>${t('stats.label','Description')}</label><input data-stat="${i}" data-f="label" value="${esc(label?label.textContent:'')}"></div></div>`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-del-stat]').forEach(b=>b.addEventListener('click',async()=>{
+    if(!(await confirmModal('حذف إحصائية','متأكد إنك عايز تحذف الإحصائية دي؟')))return;
+    applyFormToDoc();const list=elN('.stats .stat');const t=list[b.dataset.delStat];if(t)t.remove();renderStats();markDirty();toast('تم حذف الإحصائية','ok');
+  }));
+  wrap.querySelectorAll('[data-move-stat]').forEach(b=>b.addEventListener('click',()=>{
+    moveInList('.stats','.stats .stat',+b.dataset.moveStat,+b.dataset.dir,renderStats);
+  }));
+  wrap.querySelectorAll('input').forEach(i=>i.addEventListener('input',markDirty));
+}
+$('addStat').addEventListener('click',()=>{
+  if(!doc){toast('حمّل الملف الأول','warn');return;}
+  applyFormToDoc();
+  const container=el1('.stats');
+  const items=elN('.stats .stat');
+  const node=(items[items.length-1]||document.createElement('div')).cloneNode(true);
+  if(!items.length){node.className='stat';node.innerHTML='<strong class="counter" data-target="0">0</strong><span>وصف</span>';}
+  else{const c=node.querySelector('.counter');if(c){c.dataset.target='0';c.textContent='0';}const s=node.querySelector('span');if(s)s.textContent='إحصائية جديدة';}
+  container.appendChild(node);
+  renderStats();markDirty();toast('تمت إضافة إحصائية جديدة','ok');
+});
+
+/* ---------- PROJECTS ---------- */
+let projFilter='';
+let currentProjIdx=null;
+
+/* ----- LIST VIEW ----- */
+function renderProjects(){
+  const wrap=$('projectsWrap');wrap.innerHTML='';
+  let list=elN('.projects .project').map((elm,i)=>({elm,i}));
+  const allCount=list.length;
+  if(projFilter){
+    const f=projFilter.toLowerCase();
+    list=list.filter(({elm})=>{
+      const h=(elm.querySelector('h3')?.textContent||'').toLowerCase();
+      const p=(elm.querySelector('.project-content p')?.textContent||'').toLowerCase();
+      const tags=[...elm.querySelectorAll('.tag')].map(t=>t.textContent).join(' ').toLowerCase();
+      return h.includes(f)||p.includes(f)||tags.includes(f);
+    });
+  }
+  $('projCount').textContent=`${allCount} ${currentLang==='ar'?'مشروع':'projects'}${projFilter?` (${currentLang==='ar'?'عرض':'showing'} ${list.length})`:''}`;
+  if(!allCount){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('folder')}</span><b>${t('projects.noProjectsYet')}</b><small>${t('projects.noProjectsHint')}</small></div>`;return;}
+  if(!list.length){wrap.innerHTML=`<div class="empty"><b>${currentLang==='ar'?'مفيش نتائج':'No results'}</b><small>${currentLang==='ar'?'جرب كلمة بحث تانية':'Try another search'}</small></div>`;return;}
+
+  const E=v=>escHtml(v??'');
+  list.forEach(({elm,i})=>{
+    const h3=elm.querySelector('h3'),p=elm.querySelector('.project-content p');
+    const tags=[...elm.querySelectorAll('.tag')].map(t=>t.textContent);
+    const img=elm.querySelector('.project-preview img');
+    const div=document.createElement('div');div.className='proj-card';
+    div.innerHTML=`
+      <div class="proj-card-thumb" data-open="${i}">${img?`<img src="${E(img.getAttribute('src'))}" alt="">`:ic('image')}</div>
+      <div class="proj-card-body" data-open="${i}">
+        <h3>${E(h3?.textContent||((currentLang==='ar'?'مشروع ':'Project ')+(i+1)))}</h3>
+        <p>${E(p?.textContent||'')}</p>
+        <div class="proj-card-tags">${tags.slice(0,3).map(x=>`<span class="tag">${E(x)}</span>`).join('')}</div>
+      </div>
+      <div class="proj-card-actions">
+        <button class="btn-icon" data-open="${i}" type="button" title="${t('projects.editBtn')}">${ic('edit')}</button>
+        <button class="btn-icon" data-dup-proj="${i}" type="button" title="${t('projects.duplicateBtn')}">⧉</button>
+        <button class="btn-del" data-del-proj="${i}" type="button" title="${t('projects.deleteBtn')}">×</button>
+      </div>`;
+    wrap.appendChild(div);
+  });
+
+  wrap.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>openProjectDetail(+el.dataset.open)));
+  wrap.querySelectorAll('[data-del-proj]').forEach(b=>b.addEventListener('click',async(e)=>{
+    e.stopPropagation();
+    if(!(await confirmModal(currentLang==='ar'?'حذف مشروع':'Delete project',currentLang==='ar'?'متأكد إنك عايز تحذف المشروع ده؟':'Are you sure you want to delete this project?')))return;
+    applyFormToDoc();const idx=+b.dataset.delProj,list2=elN('.projects .project'),pg=elN('.project-page');if(list2[idx])list2[idx].remove();if(pg[idx])pg[idx].remove();
+    renumberProjects();renderProjects();markDirty();toast(currentLang==='ar'?'تم حذف المشروع':'Project deleted','ok');
+  }));
+  wrap.querySelectorAll('[data-dup-proj]').forEach(b=>b.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    applyFormToDoc();const idx=+b.dataset.dupProj,items=elN('.projects .project'),src=items[idx];if(!src)return;
+    const clone=src.cloneNode(true);const h=clone.querySelector('h3');if(h)h.textContent=(h.textContent||'')+' '+(currentLang==='ar'?'(نسخة)':'(Copy)');el1('.projects').appendChild(clone);
+    const pages=elN('.project-page'),srcPage=pages[idx];if(srcPage){const pc=srcPage.cloneNode(true);pc.id='project-copy-'+Date.now();doc.body.appendChild(pc);}
+    renumberProjects();renderProjects();markDirty();toast(currentLang==='ar'?'تم نسخ المشروع':'Project duplicated','ok');
+  }));
+}
+function renumberProjects(){
+  elN('.projects .project').forEach((elm,i)=>{
+    const n=elm.querySelector('.project-number');if(n)n.textContent='PROJECT '+String(i+1).padStart(2,'0');
+    const page=elN('.project-page')[i],k=page?.querySelector('.project-page-head .kicker');
+    if(k&&/PROJECT/i.test(k.textContent))k.textContent=k.textContent.replace(/PROJECT\s*\d+/i,'PROJECT '+String(i+1).padStart(2,'0'));
+  });
+}
+$('addProject').addEventListener('click',()=>{
+  if(!doc){toast(t('warn.noDoc'),'warn');return;}applyFormToDoc();
+  const container=el1('.projects'),items=elN('.projects .project');if(!items.length){toast(currentLang==='ar'?'لا يوجد قالب مشروع':'No project template','warn');return;}
+  const newIndex=items.length;
+  const node=items[items.length-1].cloneNode(true),h3=node.querySelector('h3'),p=node.querySelector('.project-content p'),tags=node.querySelector('.tags'),a=node.querySelector('.project-link'),img=node.querySelector('.project-preview img');
+  if(h3)h3.textContent=currentLang==='ar'?'مشروع جديد':'New Project';if(p)p.textContent=currentLang==='ar'?'وصف المشروع':'Project description';if(tags)tags.innerHTML='';if(a){a.setAttribute('href','#');a.removeAttribute('id');a.textContent='View Dashboard →';}if(img)img.remove();container.appendChild(node);
+  const pages=elN('.project-page'),template=pages[pages.length-1];if(template){const pg=template.cloneNode(true);pg.id='project-'+Date.now();pg.querySelector('.project-page-head h2').textContent=currentLang==='ar'?'صفحة مشروع جديدة':'New Project Page';doc.body.appendChild(pg);}
+  renumberProjects();markDirty();toast(currentLang==='ar'?'تمت إضافة مشروع جديد — عدّل صفحة View بالكامل':'New project added — edit its View page','ok');
+  openProjectDetail(newIndex);
+});
+$('projSearch').addEventListener('input',e=>{projFilter=e.target.value.trim();renderProjects();});
+
+/* ----- DETAIL / EDITOR VIEW ----- */
+function openProjectDetail(i){
+  currentProjIdx=i;
+  $('projListView').style.display='none';
+  $('projDetailView').style.display='block';
+  renderProjectDetail(i);
+  switchPdTab('details');
+  switchPdSub('overview');
+  window.scrollTo({top:0,behavior:'auto'});
+}
+function closeProjectDetail(){
+  applyFormToDoc();
+  currentProjIdx=null;
+  $('projDetailView').style.display='none';
+  $('projListView').style.display='block';
+  renderProjects();
+}
+function switchPdTab(id){
+  document.querySelectorAll('#pdTabbar button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  document.querySelectorAll('.tabpanel[data-tabpanel]').forEach(p=>{p.style.display=(p.dataset.tabpanel===id?'block':'none');});
+}
+function switchPdSub(id){
+  document.querySelectorAll('#pdSubnav button[data-sub]').forEach(b=>b.classList.toggle('active',b.dataset.sub===id));
+  document.querySelectorAll('.subpanel[data-subpanel]').forEach(p=>p.classList.toggle('active',p.dataset.subpanel===id));
+}
+function pdVal(i,f){const e=document.querySelector(`[data-proj="${i}"][data-f="${f}"]`);return e?e.value:'';}
+
+function renderProjectDetail(i){
+  const elm=elN('.projects .project')[i];if(!elm)return;
+  const h3=elm.querySelector('h3'),p=elm.querySelector('.project-content p');
+  const tags=[...elm.querySelectorAll('.tag')].map(t=>t.textContent).join(', ');
+  const link=elm.querySelector('.project-link'),img=elm.querySelector('.project-preview img');
+  const page=elN('.project-page')[i],cards=page?.querySelectorAll('.case-grid .case-card')||[];
+  const challenge=cards[0],solution=cards[1],embed=page?.querySelector('.dashboard-embed-card');
+  const pageTags=[...(page?.querySelectorAll('.case-tags .tag')||[])].map(t=>t.textContent).join(', ');
+  const solutionItems=[...(solution?.querySelectorAll('.solution-list span')||[])].map(x=>x.textContent.trim()).join('\n');
+  const footer=[...(page?.querySelectorAll('.case-footer a')||[])];
+  const E=v=>escHtml(v??'');
+  const field=(label,key,val,type='input',placeholder='')=>`<label>${label}</label>${type==='textarea'
+    ? `<textarea data-proj="${i}" data-f="${key}" placeholder="${E(placeholder)}">${E(val)}</textarea>`
+    : `<input data-proj="${i}" data-f="${key}" value="${E(val)}" placeholder="${E(placeholder)}">`}`;
+  const noDetails=`<div class="empty"><small>${t('projects.noDetails')}</small></div>`;
+
+  $('pdBasicFields').innerHTML=`
+    ${field(t('projects.fieldTitle'),'title',h3?.textContent||'')}
+    ${field(t('projects.fieldDesc'),'desc',p?.textContent||'','textarea')}
+    ${field(t('projects.fieldTags'),'tags',tags)}
+    ${field(t('projects.fieldUrl'),'link',link?.getAttribute('href')||'')}
+    ${field(t('projects.fieldButton'),'linktext',link?.textContent.trim()||'')}`;
+
+  $('pdSubOverview').innerHTML=page?`
+    ${field(t('projects.pageKicker'),'pageKicker',page.querySelector('.project-page-head .kicker')?.textContent||'')}
+    ${field(t('projects.pageTitle'),'pageTitle',page.querySelector('.project-page-head h2')?.textContent||'')}
+    ${field(t('projects.pageDesc'),'pageDesc',page.querySelector('.project-page-head p')?.textContent||'','textarea')}
+    ${field(t('projects.pageTags'),'pageTags',pageTags)}`:noDetails;
+
+  $('pdSubChallenge').innerHTML=page?`
+    ${field(t('projects.challengeLabel'),'challengeLabel',challenge?.querySelector('.case-label')?.textContent||'')}
+    ${field(t('projects.challengeTitle'),'challengeTitle',challenge?.querySelector('h3')?.textContent||'')}
+    ${field(t('projects.challengeText'),'challengeText',challenge?.querySelector('p:not(.case-note)')?.textContent||'','textarea')}
+    ${field(t('projects.challengeNote'),'challengeNote',challenge?.querySelector('.case-note')?.textContent||'','textarea')}`:noDetails;
+
+  $('pdSubSolution').innerHTML=page?`
+    ${field(t('projects.solutionLabel'),'solutionLabel',solution?.querySelector('.case-label')?.textContent||'')}
+    ${field(t('projects.solutionTitle'),'solutionTitle',solution?.querySelector('h3')?.textContent||'')}
+    ${field(t('projects.solutionText'),'solutionText',solution?.querySelector('p')?.textContent||'','textarea')}
+    ${field(t('projects.solutionItems'),'solutionItems',solutionItems,'textarea')}`:noDetails;
+
+  $('pdSubDashboard').innerHTML=page?`
+    ${field(t('projects.liveLabel'),'liveLabel',embed?.querySelector('.embed-head .case-label')?.textContent||'')}
+    ${field(t('projects.liveTitle'),'liveTitle',embed?.querySelector('.embed-head h3')?.textContent||'')}
+    ${field(t('projects.openText'),'openText',embed?.querySelector('.embed-head a')?.textContent.trim()||'')}
+    ${field(t('projects.openUrl'),'openUrl',embed?.querySelector('.embed-head a')?.getAttribute('href')||'')}
+    ${field(t('projects.iframeUrl'),'iframeUrl',
+      embed?.querySelector('.dashboard-preview-image')?.getAttribute('src') ||
+      embed?.querySelector('img')?.getAttribute('src') ||
+      embed?.querySelector('iframe')?.getAttribute('src') || '')}<small class="hint">ضع مسار الصورة مثل: images/dashboard-preview.png</small>
+    ${field(t('projects.fallbackText'),'fallbackText',embed?.querySelector('.embed-fallback p')?.textContent||'','textarea')}
+    ${field(t('projects.fallbackButton'),'fallbackButton',embed?.querySelector('.embed-fallback a')?.textContent.trim()||'')}
+    ${field(t('projects.fallbackUrl'),'fallbackUrl',embed?.querySelector('.embed-fallback a')?.getAttribute('href')||'')}`:noDetails;
+
+  $('pdSubButtons').innerHTML=page?`
+    ${field(t('projects.backText'),'backText',footer[0]?.textContent.trim()||'')}
+    ${field(t('projects.backUrl'),'backUrl',footer[0]?.getAttribute('href')||'')}
+    ${field(t('projects.contactText'),'contactText',footer[1]?.textContent.trim()||'')}
+    ${field(t('projects.contactUrl'),'contactUrl',footer[1]?.getAttribute('href')||'')}`:noDetails;
+
+  $('pdImageField').innerHTML=`
+    ${field(t('projects.fieldImage'),'image',img?.getAttribute('src')||'','input','images/project1.png')}
+    <div class="row" style="margin-top:8px;align-items:end"><input type="file" accept="image/*" data-img-file="${i}"><button type="button" class="btn-add" style="margin-top:0" data-img-upload-btn="${i}">${t('projects.uploadImage')}</button></div>
+    <small class="hint" id="pdImgStatus"></small>`;
+  $('pdImageField').querySelector('[data-img-upload-btn]').addEventListener('click',async()=>{
+    const fileInput=$('pdImageField').querySelector('[data-img-file]'),statusEl=$('pdImgStatus'),btn=$('pdImageField').querySelector('[data-img-upload-btn]');
+    if(!fileInput.files[0]){statusEl.textContent=currentLang==='ar'?'اختار صورة الأول':'Choose an image first';return;}
+    statusEl.textContent=currentLang==='ar'?'جاري الرفع...':'Uploading...';btn.disabled=true;
+    try{
+      const path=await uploadImageFile(fileInput.files[0]);
+      $('pdImageField').querySelector('[data-f="image"]').value=path;
+      statusEl.textContent=currentLang==='ar'?'تم الرفع — احفظ المسودة':'Uploaded — save draft';
+      markDirty();updateProjectHeaderAndPreview(i);
+      toast(currentLang==='ar'?'تم رفع الصورة':'Image uploaded','ok');
+    }catch(e){statusEl.textContent=e.message;toast(e.message,'err');}
+    btn.disabled=false;
+  });
+
+  updateProjectHeaderAndPreview(i);
+}
+
+function updateProjectHeaderAndPreview(i){
+  const E=v=>escHtml(v??'');
+  const title=pdVal(i,'title')||(currentLang==='ar'?'مشروع':'Project');
+  const desc=pdVal(i,'desc');
+  const tags=(pdVal(i,'tags')||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const imgPath=pdVal(i,'image');
+  $('pdTitle').textContent=title;
+  $('pdDesc').textContent=desc;
+  $('pdTags').innerHTML=tags.map(x=>`<span class="tag">${E(x)}</span>`).join('');
+  $('pdThumb').innerHTML=imgPath?`<img src="${E(imgPath)}" alt="">`:ic('image');
+  const badge=$('pdStatusBadge');
+  if(dirty){badge.className='badge-status draft';badge.textContent='● '+t('projects.draft');}
+  else{badge.className='badge-status connected';badge.textContent='✓ '+t('projects.published');}
+
+  const pageKicker=pdVal(i,'pageKicker'),pageTitle=pdVal(i,'pageTitle')||title,pageDesc=pdVal(i,'pageDesc')||desc;
+  const pageTags=(pdVal(i,'pageTags')||pdVal(i,'tags')||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const openText=pdVal(i,'openText')||(currentLang==='ar'?'فتح الداشبورد':'Open Dashboard');
+  const challengeTitle=pdVal(i,'challengeTitle'),challengeText=pdVal(i,'challengeText'),challengeNote=pdVal(i,'challengeNote');
+  const solTitle=pdVal(i,'solutionTitle'),solText=pdVal(i,'solutionText');
+  const solItems=(pdVal(i,'solutionItems')||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const liveTitle=pdVal(i,'liveTitle');
+
+  $('pdLivePreview').innerHTML=`
+    <div class="lp-hero">
+      <p class="lp-back">← ${t('projects.backToList')}</p>
+      <div class="lp-hero-row">
+        <div class="lp-thumb">${imgPath?`<img src="${E(imgPath)}" alt="">`:''}</div>
+        <div style="flex:1;min-width:0">
+          <h3>${E(pageTitle)}</h3>
+          ${pageKicker?`<p class="lp-sub">${E(pageKicker)}</p>`:''}
+          <div class="lp-badges">${pageTags.map(x=>`<span class="tag">${E(x)}</span>`).join('')}</div>
+        </div>
+      </div>
+      <p class="lp-desc">${E(pageDesc)}</p>
+      <div class="lp-btns"><span class="b1">${E(openText)}</span></div>
+    </div>
+    ${(challengeTitle||challengeText)?`<div class="lp-section"><h4>${ic('target')} ${currentLang==='ar'?'تحدي العمل':'Business Challenge'}</h4>
+      ${challengeTitle?`<p style="font-weight:700;color:var(--text);margin-bottom:4px">${E(challengeTitle)}</p>`:''}
+      <p>${E(challengeText)}</p>${challengeNote?`<p style="margin-top:6px;color:var(--amber)">${E(challengeNote)}</p>`:''}</div>`:''}
+    ${(solTitle||solText||solItems.length)?`<div class="lp-section"><h4>${ic('bulb')} ${currentLang==='ar'?'الحل':'Solution'}</h4>
+      ${solTitle?`<p style="font-weight:700;color:var(--text);margin-bottom:4px">${E(solTitle)}</p>`:''}
+      <p>${E(solText)}</p>
+      ${solItems.length?`<ul>${solItems.map(x=>`<li>${E(x)}</li>`).join('')}</ul>`:''}</div>`:''}
+    ${liveTitle?`<div class="lp-section"><h4>${ic('chart')} ${E(liveTitle)}</h4>${tags.length?`<div class="lp-chips">${tags.map(x=>`<span>${E(x)}</span>`).join('')}</div>`:''}</div>`:''}`;
+}
+
+/* wire static detail-view controls once */
+$('backToProjects').addEventListener('click',closeProjectDetail);
+$('pdTabbar').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;switchPdTab(b.dataset.tab);});
+$('pdSubnav').addEventListener('click',e=>{const b=e.target.closest('button[data-sub]');if(!b)return;switchPdSub(b.dataset.sub);});
+$('projDetailView').addEventListener('input',e=>{
+  if(!e.target.matches('input,textarea'))return;
+  markDirty();
+  if(currentProjIdx!==null)updateProjectHeaderAndPreview(currentProjIdx);
+});
+$('pdBtnPreview').addEventListener('click',()=>{
+  if(!doc){toast(t('warn.noDoc'),'err');return;}
+  applyFormToDoc();
+  const w=window.open('about:blank');
+  if(w){w.document.open();w.document.write(serializeDoc());w.document.close();}
+});
+$('pdBtnSaveDraft').addEventListener('click',()=>{saveDraft();if(currentProjIdx!==null)updateProjectHeaderAndPreview(currentProjIdx);});
+$('pdBtnPublish').addEventListener('click',()=>{publish();});
+$('pdBtnDuplicate').addEventListener('click',()=>{
+  if(currentProjIdx===null)return;
+  applyFormToDoc();const idx=currentProjIdx,items=elN('.projects .project'),src=items[idx];if(!src)return;
+  const clone=src.cloneNode(true);const h=clone.querySelector('h3');if(h)h.textContent=(h.textContent||'')+' '+(currentLang==='ar'?'(نسخة)':'(Copy)');el1('.projects').appendChild(clone);
+  const pages=elN('.project-page'),srcPage=pages[idx];if(srcPage){const pc=srcPage.cloneNode(true);pc.id='project-copy-'+Date.now();doc.body.appendChild(pc);}
+  renumberProjects();markDirty();toast(currentLang==='ar'?'تم نسخ المشروع':'Project duplicated','ok');
+  closeProjectDetail();
+});
+$('pdBtnMoveUp').addEventListener('click',()=>{
+  if(currentProjIdx===null)return;const idx=currentProjIdx;
+  moveInList('.projects','.projects .project',idx,-1,()=>{currentProjIdx=idx-1;renderProjectDetail(currentProjIdx);},renumberProjects);
+});
+$('pdBtnMoveDown').addEventListener('click',()=>{
+  if(currentProjIdx===null)return;const idx=currentProjIdx;
+  moveInList('.projects','.projects .project',idx,1,()=>{currentProjIdx=idx+1;renderProjectDetail(currentProjIdx);},renumberProjects);
+});
+$('pdBtnDelete').addEventListener('click',async()=>{
+  if(currentProjIdx===null)return;
+  if(!(await confirmModal(currentLang==='ar'?'حذف مشروع':'Delete project',currentLang==='ar'?'متأكد إنك عايز تحذف المشروع ده؟':'Are you sure you want to delete this project?')))return;
+  applyFormToDoc();const idx=currentProjIdx,list2=elN('.projects .project'),pg=elN('.project-page');if(list2[idx])list2[idx].remove();if(pg[idx])pg[idx].remove();
+  renumberProjects();markDirty();toast(currentLang==='ar'?'تم حذف المشروع':'Project deleted','ok');
+  closeProjectDetail();
+});
+
+/* ---------- SKILLS ---------- */
+let skillFilter='';
+function renderSkills(){
+  const wrap=$('skillsWrap');wrap.innerHTML='';
+  let list=elN('.skills .skill').map((elm,i)=>({elm,i}));
+  const allCount=list.length;
+  if(skillFilter){const f=skillFilter.toLowerCase();list=list.filter(({elm})=>(elm.querySelector('h3')?.textContent||'').toLowerCase().includes(f)||(elm.querySelector('p')?.textContent||'').toLowerCase().includes(f));}
+  $('skillCount').textContent=`${allCount} مهارة${skillFilter?` (عرض ${list.length})`:''}`;
+  if(!allCount){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('target')}</span><b>${t('skills.empty','No skills yet')}</b><small>${t('skills.emptyHint','Add a skill to get started')}</small></div>`;return;}
+  if(!list.length){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('search')}</span><b>${t('common.noResults','No results')}</b><small>${t('common.tryAgain','Try another search')}</small></div>`;return;}
+  list.forEach(({elm,i})=>{
+    const icon=elm.querySelector('.skill-icon'),h3=elm.querySelector('h3'),p=elm.querySelector('p');
+    const pct=elm.querySelector('[data-percent]')||elm.querySelector('.progress');
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<div class="item-head"><h4>${t('skills.item','Skill')} ${i+1}</h4><div class="item-actions">
+    <button class="btn-icon" data-move-skill="${i}" data-dir="-1" type="button">↑</button>
+    <button class="btn-icon" data-move-skill="${i}" data-dir="1" type="button">↓</button>
+    <button class="btn-del" data-del-skill="${i}" type="button">✕</button></div></div>
+    <div class="row3"><div><label>${t('skills.icon','Icon')}</label><input data-skill="${i}" data-f="icon" value="${esc(icon?icon.textContent:'')}"></div>
+    <div style="grid-column:span 2"><label>${t('skills.title','Title')}</label><input data-skill="${i}" data-f="title" value="${esc(h3?h3.textContent:'')}"></div></div>
+    <label>${t('skills.desc','Description / Category')}</label><textarea data-skill="${i}" data-f="desc">${p?p.textContent:''}</textarea>
+    ${pct?`<label>${t('skills.percent','Percent %')}</label><input data-skill="${i}" data-f="percent" value="${esc(pct.dataset.percent||'')}">`:''}`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-del-skill]').forEach(b=>b.addEventListener('click',async()=>{
+    if(!(await confirmModal('حذف مهارة','متأكد إنك عايز تحذف المهارة دي؟')))return;
+    applyFormToDoc();const list=elN('.skills .skill');const t=list[b.dataset.delSkill];if(t)t.remove();renderSkills();markDirty();toast('تم حذف المهارة','ok');
+  }));
+  wrap.querySelectorAll('[data-move-skill]').forEach(b=>b.addEventListener('click',()=>{
+    moveInList('.skills','.skills .skill',+b.dataset.moveSkill,+b.dataset.dir,renderSkills);
+  }));
+  wrap.querySelectorAll('input,textarea').forEach(i=>i.addEventListener('input',markDirty));
+}
+$('addSkill').addEventListener('click',()=>{
+  if(!doc){toast('حمّل الملف الأول','warn');return;}
+  applyFormToDoc();
+  const container=el1('.skills');
+  const items=elN('.skills .skill');
+  if(!items.length){toast('مفيش قالب مهارة في الملف الحالي عشان أنسخ منه','warn');return;}
+  const node=items[items.length-1].cloneNode(true);
+  const icon=node.querySelector('.skill-icon');if(icon)icon.textContent='✨';
+  const h3=node.querySelector('h3');if(h3)h3.textContent='مهارة جديدة';
+  const p=node.querySelector('p');if(p)p.textContent='وصف المهارة';
+  container.appendChild(node);
+  renderSkills();markDirty();toast('تمت إضافة مهارة جديدة','ok');
+  goPage('skills');
+});
+$('skillSearch').addEventListener('input',e=>{skillFilter=e.target.value.trim();renderSkills();});
+
+/* ---------- IMAGES ---------- */
+function renderImages(){
+  const grid=$('imagesGrid');grid.innerHTML='';
+  const imgs=elN('.projects .project .project-preview img');
+  if(!imgs.length){grid.innerHTML=`<div class="empty"><span class="ei">${ic('image')}</span><b>${t('images.empty','No project images yet')}</b><small>${t('images.emptyHint','Upload an image and assign it to a project')}</small></div>`;return;}
+  imgs.forEach((img,i)=>{
+    const src=img.getAttribute('src');
+    const card=document.createElement('div');card.className='img-card';
+    card.innerHTML=`<img class="thumb" src="${esc(src)}" alt=""><div class="path">${esc(src)}</div>
+    <div class="img-actions"><button class="btn-ghost btn-sm" data-copy-img="${esc(src)}" type="button">${t('images.copyPath','Copy path')}</button></div>`;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll('[data-copy-img]').forEach(b=>b.addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(b.dataset.copyImg);toast(t('images.copied','Path copied'),'ok');}catch(e){toast(t('images.copyFail','Could not copy — copy it manually: ')+b.dataset.copyImg,'warn');}
+  }));
+}
+$('newImgUploadBtn').addEventListener('click',async()=>{
+  const f=$('newImgFile').files[0];
+  if(!f){$('newImgStatus').textContent='اختار صورة الأول';return;}
+  $('newImgStatus').innerHTML='<span class="spinner"></span> جاري الرفع...';
+  $('newImgUploadBtn').disabled=true;
+  try{
+    const path=await uploadImageFile(f,m=>$('newImgStatus').textContent=m);
+    $('newImgStatus').textContent='تم الرفع ✓ المسار: '+path;
+    toast('تم رفع الصورة — قدر تحطها في أي مشروع من قسم المشاريع','ok');
+  }catch(e){$('newImgStatus').textContent='فشل الرفع: '+e.message;toast('فشل رفع الصورة: '+e.message,'err');}
+  $('newImgUploadBtn').disabled=false;
+});
+
+/* ---------- APPLY FORM -> DOC ---------- */
+function applyFormToDoc(){
+  if(!doc)return;
+  setText('title',$('f_title').value);
+  setAttr('meta[name="description"]','content',$('f_metaDesc').value);
+  setChildText('.logo',0,$('f_logoText').value);
+  setText('.intro-label',$('f_introLabel').value);
+  setText('.intro-name .first',$('f_introFirst').value);
+  setText('.intro-name .last',$('f_introLast').value);
+  const badge=el1('.badge');
+  if(badge)badge.childNodes[badge.childNodes.length-1].textContent=$('f_badgeText').value;
+  setChildText('.hero h1',0,$('f_heroPre').value+' ');
+  setNth('.hero h1 .gradient',0,$('f_heroWord1').value);
+  setChildText('.hero h1',2,' '+$('f_heroMid').value+' ');
+  setNth('.hero h1 .gradient',1,$('f_heroWord2').value);
+  setText('.hero-text',$('f_heroText').value);
+  const primaryBtn=el1('.hero .btn-primary');
+  if(primaryBtn){if(primaryBtn.childNodes[0])primaryBtn.childNodes[0].textContent=$('f_btnPrimary').value+' ';if($('f_btnPrimaryLink').value)primaryBtn.setAttribute('href',$('f_btnPrimaryLink').value);}
+  const secBtn=el1('.hero .btn-secondary');
+  setText('.hero .btn-secondary',$('f_btnSecondary').value);
+  if(secBtn&&$('f_btnSecondaryLink').value)secBtn.setAttribute('href',$('f_btnSecondaryLink').value);
+  setNth('.kpi strong',0,$('f_kpi1').value);
+  setNth('.kpi strong',1,$('f_kpi2').value);
+  setNth('.kpi strong',2,$('f_kpi3').value);
+  setText('.about-text h2',$('f_aboutHeading').value);
+  setNth('.about-text p',0,$('f_aboutP1').value);
+  setNth('.about-text p',1,$('f_aboutP2').value);
+  setText('.contact-box .kicker',$('f_contactKicker').value);
+  setChildText('.contact-box h2',0,$('f_contactPre').value+' ');
+  setText('.contact-box h2 .gradient',$('f_contactHighlight').value);
+  setText('.contact-box p',$('f_contactDesc').value);
+  const cBtns=elN('.contact-buttons a');
+  if(cBtns[0])cBtns[0].setAttribute('href',$('f_whatsapp').value);
+  if(cBtns[1])cBtns[1].setAttribute('href','mailto:'+$('f_email').value);
+  if(cBtns[2])cBtns[2].setAttribute('href',$('f_linkedin').value);
+  setNth('.footer-inner span',0,$('f_footerLeft').value);
+  setNth('.footer-inner span',1,$('f_footerRight').value);
+
+  setCssVar('blue',$('f_colorBlue').value);
+  setCssVar('cyan',$('f_colorCyan').value);
+  setCssVar('bg',$('f_colorBg').value);
+  setCssVar('text',$('f_colorText').value);
+  setCssVar('muted',$('f_colorMuted').value);
+  setFont($('f_font').value);
+
+  document.querySelectorAll('[data-stat]').forEach(inp=>{
+    const elm=elN('.stats .stat')[inp.dataset.stat];if(!elm)return;
+    if(inp.dataset.f==='val'){const c=elm.querySelector('.counter');if(c)c.dataset.target=inp.value;}
+    else{const s=elm.querySelector('span');if(s)s.textContent=inp.value;}
+  });
+  document.querySelectorAll('[data-proj]').forEach(inp=>{
+    const idx=+inp.dataset.proj,elm=elN('.projects .project')[idx];if(!elm)return;
+    const f=inp.dataset.f,v=inp.value;
+    if(f==='title'){const e=elm.querySelector('h3');if(e)e.textContent=v;}
+    if(f==='desc'){const e=elm.querySelector('.project-content p');if(e)e.textContent=v;}
+    if(f==='link'){const e=elm.querySelector('.project-link');if(e)e.setAttribute('href',v);}
+    if(f==='linktext'){const e=elm.querySelector('.project-link');if(e)e.textContent=v;}
+    if(f==='image'){const box=elm.querySelector('.project-preview');if(box){let im=box.querySelector('img');if(v.trim()){if(!im){box.innerHTML='';im=doc.createElement('img');im.setAttribute('style','width:100%;height:100%;object-fit:cover;border-radius:9px;display:block');box.appendChild(im);}im.setAttribute('src',v.trim());}else if(im)im.remove();}}
+    if(f==='tags'){const box=elm.querySelector('.tags');if(box){box.innerHTML='';v.split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{const s=doc.createElement('span');s.className='tag';s.textContent=x;box.appendChild(s);});}}
+    const page=elN('.project-page')[idx];if(!page)return;
+    const set=(sel,val)=>{const e=page.querySelector(sel);if(e)e.textContent=val;};
+    const attr=(sel,a,val)=>{const e=page.querySelector(sel);if(e)e.setAttribute(a,val);};
+    if(f==='pageKicker')set('.project-page-head .kicker',v);
+    if(f==='pageTitle')set('.project-page-head h2',v);
+    if(f==='pageDesc')set('.project-page-head p',v);
+    if(f==='pageTags'){const box=page.querySelector('.case-tags');if(box){box.innerHTML='';v.split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{const s=doc.createElement('span');s.className='tag';s.textContent=x;box.appendChild(s);});}}
+    const cards=page.querySelectorAll('.case-grid .case-card'),ch=cards[0],sol=cards[1];
+    if(f==='challengeLabel'&&ch){const e=ch.querySelector('.case-label');if(e)e.textContent=v;}
+    if(f==='challengeTitle'&&ch){const e=ch.querySelector('h3');if(e)e.textContent=v;}
+    if(f==='challengeText'&&ch){const e=ch.querySelector('p:not(.case-note)');if(e)e.textContent=v;}
+    if(f==='challengeNote'&&ch){let e=ch.querySelector('.case-note');if(v.trim()){if(!e){e=doc.createElement('p');e.className='case-note';ch.appendChild(e);}e.textContent=v;}else if(e)e.remove();}
+    if(f==='solutionLabel'&&sol){const e=sol.querySelector('.case-label');if(e)e.textContent=v;}
+    if(f==='solutionTitle'&&sol){const e=sol.querySelector('h3');if(e)e.textContent=v;}
+    if(f==='solutionText'&&sol){const e=sol.querySelector('p');if(e)e.textContent=v;}
+    if(f==='solutionItems'&&sol){let box=sol.querySelector('.solution-list');if(!box){box=doc.createElement('div');box.className='solution-list';sol.appendChild(box);}box.innerHTML='';v.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(x=>{const s=doc.createElement('span');s.textContent=x;box.appendChild(s);});}
+    const embed=page.querySelector('.dashboard-embed-card'),head=embed?.querySelector('.embed-head'),fallback=embed?.querySelector('.embed-fallback');
+    if(f==='liveLabel'){const e=head?.querySelector('.case-label');if(e)e.textContent=v;}
+    if(f==='liveTitle'){const e=head?.querySelector('h3');if(e)e.textContent=v;}
+    if(f==='openText'){const e=head?.querySelector('a');if(e)e.textContent=v;}
+    if(f==='openUrl'){const e=head?.querySelector('a');if(e)e.setAttribute('href',v);}
+    if(f==='iframeUrl'&&embed){
+      let e=embed.querySelector('.dashboard-preview-image')||embed.querySelector('img');
+      const oldIframe=embed.querySelector('iframe');
+      if(v.trim()){
+        if(!e){
+          e=doc.createElement('img');
+          e.className='dashboard-preview-image';
+          e.setAttribute('alt','Dashboard preview');
+          e.setAttribute('loading','lazy');
+          e.setAttribute('style','display:block;width:100%;height:auto;max-height:720px;object-fit:contain;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#0a0f18;');
+          const host=oldIframe?.parentNode||embed;
+          if(oldIframe) host.replaceChild(e,oldIframe);
+          else host.appendChild(e);
+        }
+        e.setAttribute('src',v.trim());
+      }else if(e){
+        e.remove();
+      }
+    }
+    if(f==='fallbackText'){const e=fallback?.querySelector('p');if(e)e.textContent=v;}
+    if(f==='fallbackButton'){const e=fallback?.querySelector('a');if(e)e.textContent=v;}
+    if(f==='fallbackUrl'){const e=fallback?.querySelector('a');if(e)e.setAttribute('href',v);}
+    const ft=page.querySelectorAll('.case-footer a');
+    if(f==='backText'&&ft[0])ft[0].textContent=v;if(f==='backUrl'&&ft[0])ft[0].setAttribute('href',v);
+    if(f==='contactText'&&ft[1])ft[1].textContent=v;if(f==='contactUrl'&&ft[1])ft[1].setAttribute('href',v);
+  });
+  document.querySelectorAll('[data-skill]').forEach(inp=>{
+    const elm=elN('.skills .skill')[inp.dataset.skill];if(!elm)return;
+    if(inp.dataset.f==='icon'){const i=elm.querySelector('.skill-icon');if(i)i.textContent=inp.value;}
+    if(inp.dataset.f==='title'){const h=elm.querySelector('h3');if(h)h.textContent=inp.value;}
+    if(inp.dataset.f==='desc'){const p=elm.querySelector('p');if(p)p.textContent=inp.value;}
+    if(inp.dataset.f==='percent'){const pe=elm.querySelector('[data-percent]');if(pe)pe.dataset.percent=inp.value;}
+  });
+}
+
+function serializeDoc(){return'<!DOCTYPE html>\n'+doc.documentElement.outerHTML;}
+
+/* ---------- SAVE DRAFT / PUBLISH ---------- */
+function saveDraft(){
+  if(!doc){toast('حمّل الملف الأول من قسم GitHub','warn');return;}
+  applyFormToDoc();
+  lastSaved=new Date();dirty=false;
+  renderOverview();renderImages();
+  toast('تم حفظ المسودة محليًا — المعاينة اتحدثت','ok');
+  logEvent('dashboardEdit',currentLang==='ar'?'حفظ مسودة':'Draft saved');
+  if(currentPage==='preview')refreshPreviewFrame();
+}
+$('btnSaveDraft').addEventListener('click',saveDraft);
+
+async function publish(){
+  if(!doc||!sha){toast('لازم تحمّل الملف من GitHub الأول','warn');goPage('github');return;}
+  if(!cfgValid()||!$('cfgToken').value.trim()){toast('بيانات الاتصال بـ GitHub ناقصة','warn');goPage('github');return;}
+  applyFormToDoc();
+  const html=serializeDoc();
+  status('جاري النشر...','loading');
+  $('stPut').textContent='جاري الطلب...';
+  toast('جاري النشر على GitHub...','info',2000);
+  try{
+    const res=await fetch(apiUrl(),{
+      method:'PUT',
+      headers:{...headers(),'Content-Type':'application/json'},
+      body:JSON.stringify({message:'تحديث البورتفوليو عبر لوحة التحكم',content:b64Encode(html),sha:sha,branch:$('cfgBranch').value.trim()})
+    });
+    if(!res.ok)throw new Error(await githubError(res));
+    const data=await res.json();
+    sha=data.content.sha;
+    lastSaved=new Date();dirty=false;
+    logEvent('dashboardEdit',currentLang==='ar'?'نشر على GitHub':'Published to GitHub');
+    status('تم الحفظ بنجاح ✓ التغييرات هتظهر على الموقع خلال ثواني','ok');
+    toast('تم النشر على GitHub بنجاح ✓','ok');
+    $('stPut').textContent='نجح ✓';$('stSha').textContent=sha?sha.slice(0,10)+'…':'—';
+    renderOverview();
+  }catch(e){
+    console.error(e);
+    status('فشل الحفظ: '+e.message,'err');
+    toast('فشل النشر: '+e.message,'err',6000);
+    $('stPut').textContent='فشل: '+e.message;
+  }
+}
+$('btnPublishTop').addEventListener('click',publish);
+$('qaPublish').addEventListener('click',publish);
+
+/* ---------- QUICK ACTIONS / OVERVIEW ---------- */
+document.querySelectorAll('.qa[data-go]').forEach(q=>q.addEventListener('click',()=>{
+  goPage(q.dataset.go);
+  if(q.dataset.add==='project')setTimeout(()=>$('addProject').click(),80);
+  if(q.dataset.add==='skill')setTimeout(()=>$('addSkill').click(),80);
+}));
+
+function renderOverview(){
+  const connected=!!(doc&&sha);
+  const nProj=doc?elN('.projects .project').length:0;
+  const nSkill=doc?elN('.skills .skill').length:0;
+  const nSections=doc?elN('section, .section').length:0;
+  $('ovCards').innerHTML=`
+    <div class="stat-card"><div class="glow"></div><div class="k">${nProj}</div><div class="l">${t('ov.nProjects')}</div></div>
+    <div class="stat-card"><div class="glow"></div><div class="k">${nSkill}</div><div class="l">${t('ov.nSkills')}</div></div>
+    <div class="stat-card"><div class="glow"></div><div class="k">${nSections||'—'}</div><div class="l">${t('ov.nSections')}</div></div>
+    <div class="stat-card ${connected?'ok':'err'}"><div class="glow"></div><div class="k">${connected?'✓':'✕'}</div><div class="l">${t('ov.connLabel')}</div></div>`;
+  const locale=currentLang==='ar'?'ar-EG':'en-US';
+  $('actLoaded').textContent=lastLoaded?lastLoaded.toLocaleTimeString(locale):'—';
+  const dirtySuffix=dirty?(currentLang==='ar'?' (وفيه تغييرات جديدة)':' (unsaved changes)'):'';
+  $('actSaved').textContent=lastSaved?(lastSaved.toLocaleTimeString(locale)+dirtySuffix):(dirty?(currentLang==='ar'?'لسه محفوظتش':'Not saved yet'):'—');
+  if($('dashLoaded'))$('dashLoaded').textContent=lastLoaded?lastLoaded.toLocaleTimeString(locale):'—';
+  if($('dashSaved'))$('dashSaved').textContent=lastSaved?lastSaved.toLocaleTimeString(locale):(dirty?(currentLang==='ar'?'لسه محفوظتش':'Not saved yet'):'—');
+  if($('dashMainMetric'))$('dashMainMetric').textContent=nProj+nSkill+nSections;
+  if($('dashConn'))$('dashConn').textContent=connected?(currentLang==='ar'?'متصل بـ GitHub':'Connected to GitHub'):(currentLang==='ar'?'غير متصل':'Not connected');
+  if($('dashStatusText'))$('dashStatusText').textContent=connected?(currentLang==='ar'?'متصل وجاهز للنشر':'Connected & ready to publish'):(currentLang==='ar'?'جاهز للعمل':'Ready to work');
+  const acc=DataService.get(ACCOUNT_KEY,{});
+  if($('dashWelcomeUser'))$('dashWelcomeUser').textContent=acc.username||'Mahmoud';
+  updateConnBadges();
+}
+
+/* ---------- PREVIEW ---------- */
+function refreshPreviewFrame(){
+  if(!doc){toast('حمّل الملف الأول','err');return;}
+  applyFormToDoc();
+  $('previewFrame').srcdoc=serializeDoc();
+}
+$('refreshPreview').addEventListener('click',refreshPreviewFrame);
+$('openPreviewTab').addEventListener('click',()=>{
+  if(!doc){toast('حمّل الملف الأول','err');return;}
+  applyFormToDoc();
+  const w=window.open('about:blank');
+  if(w){w.document.open();w.document.write(serializeDoc());w.document.close();}
+});
+document.querySelectorAll('.seg button[data-w]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.seg button[data-w]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const f=$('previewFrame');
+  if(b.dataset.w==='mobile'){f.style.width='390px';f.style.margin='0 auto';f.style.display='block';}
+  else{f.style.width='100%';f.style.margin='0';}
+}));
+
+/* ---------- SETTINGS ---------- */
+$('adminDark').addEventListener('change',e=>{
+  document.documentElement.style.filter=e.target.checked?'':'invert(1) hue-rotate(180deg)';
+  logEvent('settingsChange','adminDark='+e.target.checked);
+});
+$('reducedMotion').addEventListener('change',e=>{
+  document.body.style.setProperty('--rm',e.target.checked?'reduce':'no-preference');
+  if(e.target.checked)document.querySelectorAll('*').forEach(()=>{});
+  logEvent('settingsChange','reducedMotion='+e.target.checked);
+});
+$('motionIntensity').addEventListener('change',e=>{logEvent('settingsChange','motionIntensity='+e.target.value);});
+
+/* ---------- INIT ---------- */
+function loadSavedConfig(){
+  CFG_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v)$(k).value=v;});
+  const savedTok=localStorage.getItem('cfgToken');
+  if(savedTok){$('cfgToken').value=savedTok;}else{$('rememberToken').checked=false;}
+  if(!$('cfgPath').value)$('cfgPath').value='index.html';
+  if(!$('cfgBranch').value)$('cfgBranch').value='main';
+}
+
+function initIntro(skipAnim){
+  const reduce=skipAnim||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(()=>{$('intro').classList.add('hide');$('app').classList.add('show');goPage('overview');},reduce?150:1900);
+}
+
+function startAppAfterLogin(skipIntroAnim){
+  const acc=DataService.get(ACCOUNT_KEY,{});
+  if($('headerAccUser'))$('headerAccUser').textContent=acc.username||'admin';
+  initIntro(skipIntroAnim);
+  updateConnBadges();
+  renderOverview();
+  renderAuditLog();
+}
+
+buildNav();
+loadSavedConfig();
+renderAccountFormDefaults();
+ensureDefaultAccount().then(()=>{
+  if(isLoggedIn()){
+    $('loginScreen').classList.add('hide');
+    startAppAfterLogin(true);
+  }
+});
+
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js"></script>
+<script>
+(function(){
+  function bootThreeIntro(){
+    const canvas=document.getElementById('threeIntroCanvas');
+    const intro=document.getElementById('intro');
+    if(!canvas||!intro||!window.THREE)return;
+
+    const THREE=window.THREE;
+    const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+    renderer.setClearColor(0x000000,0);
+
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(45,1,.1,100);
+    camera.position.set(0,0,8);
+
+    const group=new THREE.Group();
+    scene.add(group);
+
+    // Lightweight particle field
+    const count=window.innerWidth<700?420:720;
+    const positions=new Float32Array(count*3);
+    for(let i=0;i<count;i++){
+      const i3=i*3;
+      const r=3.2+Math.random()*5.5;
+      const a=Math.random()*Math.PI*2;
+      const y=(Math.random()-.5)*5.5;
+      positions[i3]=Math.cos(a)*r;
+      positions[i3+1]=y;
+      positions[i3+2]=Math.sin(a)*r-2;
+    }
+    const pGeo=new THREE.BufferGeometry();
+    pGeo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+    const pMat=new THREE.PointsMaterial({color:0x7fc7ff,size:.025,transparent:true,opacity:.65,sizeAttenuation:true});
+    const particles=new THREE.Points(pGeo,pMat);
+    group.add(particles);
+
+    // Subtle 3D rings behind ADMIN
+    const ringMat=new THREE.MeshBasicMaterial({color:0x4f8cff,wireframe:true,transparent:true,opacity:.13});
+    const ring1=new THREE.Mesh(new THREE.TorusGeometry(2.45,.012,8,96),ringMat);
+    const ring2=new THREE.Mesh(new THREE.TorusGeometry(1.85,.009,8,80),new THREE.MeshBasicMaterial({color:0x4fd8ff,wireframe:true,transparent:true,opacity:.11}));
+    ring1.rotation.x=.9; ring1.rotation.y=.25;
+    ring2.rotation.x=1.25; ring2.rotation.z=.7;
+    group.add(ring1,ring2);
+
+    const resize=()=>{
+      const w=window.innerWidth,h=window.innerHeight;
+      renderer.setSize(w,h,false);
+      camera.aspect=w/h;
+      camera.updateProjectionMatrix();
+    };
+    resize();
+    window.addEventListener('resize',resize,{passive:true});
+
+    let raf=0;
+    const clock=new THREE.Clock();
+    const animate=()=>{
+      if(!document.body.contains(canvas))return;
+      raf=requestAnimationFrame(animate);
+      const t=clock.getElapsedTime();
+      group.rotation.y=t*.025;
+      group.rotation.x=Math.sin(t*.18)*.025;
+      particles.rotation.y=-t*.018;
+      ring1.rotation.z=t*.06;
+      ring2.rotation.y=-t*.045;
+      const visible=getComputedStyle(intro).display!=='none' && !intro.classList.contains('hide');
+      if(visible)renderer.render(scene,camera);
+    };
+    animate();
+
+    const cleanup=()=>{
+      cancelAnimationFrame(raf);
+      pGeo.dispose();pMat.dispose();
+      ring1.geometry.dispose();ring1.material.dispose();
+      ring2.geometry.dispose();ring2.material.dispose();
+      renderer.dispose();
+    };
+    setTimeout(()=>{
+      if(intro.classList.contains('hide'))cleanup();
+    },2600);
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootThreeIntro);
+  else bootThreeIntro();
+})();
+</script>
+
+
+<script id="final-simple-i18n-fixes">
+(function(){
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function rerenderIfReady(){
+    try{ if(typeof renderOverview==='function') renderOverview(); }catch(e){}
+    try{ if(typeof renderProjects==='function') renderProjects(); }catch(e){}
+    try{ if(typeof renderSkills==='function') renderSkills(); }catch(e){}
+    try{ if(typeof renderImages==='function') renderImages(); }catch(e){}
+  }
+  /* Replace the two older hard-coded renderers with language-aware versions. */
+  window.renderSkills=function(){
+    const wrap=$('skillsWrap'); if(!wrap)return; wrap.innerHTML='';
+    let list=elN('.skills .skill').map((elm,i)=>({elm,i}));
+    const allCount=list.length;
+    if(skillFilter){const f=skillFilter.toLowerCase();list=list.filter(({elm})=>(elm.querySelector('h3')?.textContent||'').toLowerCase().includes(f)||(elm.querySelector('p')?.textContent||'').toLowerCase().includes(f));}
+    $('skillCount').textContent=`${allCount} ${t('skills.item')}${skillFilter?` (${currentLang==='ar'?'عرض':'showing'} ${list.length})`:''}`;
+    if(!allCount){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('target')}</span><b>${t('skills.empty')}</b><small>${t('skills.emptyHint')}</small></div>`;return;}
+    if(!list.length){wrap.innerHTML=`<div class="empty"><span class="ei">${ic('search')}</span><b>${t('common.noResults')}</b><small>${t('common.tryAgain')}</small></div>`;return;}
+    list.forEach(({elm,i})=>{
+      const icon=elm.querySelector('.skill-icon'),h3=elm.querySelector('h3'),p=elm.querySelector('p');
+      const pct=elm.querySelector('[data-percent]')||elm.querySelector('.progress');
+      const div=document.createElement('div');div.className='item';
+      div.innerHTML=`<div class="item-head"><h4>${t('skills.item')} ${i+1}</h4><div class="item-actions">
+      <button class="btn-icon" data-move-skill="${i}" data-dir="-1" type="button" title="↑">↑</button>
+      <button class="btn-icon" data-move-skill="${i}" data-dir="1" type="button" title="↓">↓</button>
+      <button class="btn-del" data-del-skill="${i}" type="button" title="${t('projects.deleteBtn')}">✕</button></div></div>
+      <div class="row3"><div><label>${t('skills.icon')}</label><input data-skill="${i}" data-f="icon" value="${esc(icon?icon.textContent:'')}"></div>
+      <div style="grid-column:span 2"><label>${t('skills.title')}</label><input data-skill="${i}" data-f="title" value="${esc(h3?h3.textContent:'')}"></div></div>
+      <label>${t('skills.desc')}</label><textarea data-skill="${i}" data-f="desc">${esc(p?p.textContent:'')}</textarea>
+      ${pct?`<label>${t('skills.percent')}</label><input data-skill="${i}" data-f="percent" value="${esc(pct.dataset.percent||'')}">`:''}`;
+      wrap.appendChild(div);
+    });
+    wrap.querySelectorAll('[data-del-skill]').forEach(b=>b.addEventListener('click',async()=>{
+      if(!(await confirmModal(t('projects.deleteTitle'),currentLang==='ar'?'متأكد إنك عايز تحذف المهارة دي؟':'Are you sure you want to delete this skill?')))return;
+      applyFormToDoc(); const items=elN('.skills .skill'),target=items[+b.dataset.delSkill]; if(target)target.remove(); renderSkills(); markDirty(); toast(currentLang==='ar'?'تم حذف المهارة':'Skill deleted','ok');
+    }));
+    wrap.querySelectorAll('[data-move-skill]').forEach(b=>b.addEventListener('click',()=>moveInList('.skills','.skills .skill',+b.dataset.moveSkill,+b.dataset.dir,renderSkills)));
+    wrap.querySelectorAll('input,textarea').forEach(i=>i.addEventListener('input',markDirty));
+  };
+  window.renderImages=function(){
+    const grid=$('imagesGrid'); if(!grid)return; grid.innerHTML='';
+    const imgs=elN('.projects .project .project-preview img');
+    if(!imgs.length){grid.innerHTML=`<div class="empty"><span class="ei">${ic('image')}</span><b>${t('images.empty')}</b><small>${t('images.emptyHint')}</small></div>`;return;}
+    imgs.forEach(img=>{
+      const src=img.getAttribute('src'); const card=document.createElement('div');card.className='img-card';
+      card.innerHTML=`<img class="thumb" src="${esc(src)}" alt=""><div class="path">${esc(src)}</div><div class="img-actions"><button class="btn-ghost btn-sm" data-copy-img="${esc(src)}" type="button">${t('images.copyPath')}</button></div>`;
+      grid.appendChild(card);
+    });
+    grid.querySelectorAll('[data-copy-img]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copyImg);toast(t('images.copied'),'ok')}catch(e){toast(t('images.copyFail')+b.dataset.copyImg,'warn')}}));
+  };
+  /* Keep language direction and refresh all dynamic panels whenever language changes. */
+  const oldApply=window.applyI18n;
+  window.applyI18n=function(){
+    if(typeof oldApply==='function') oldApply();
+    document.documentElement.dir=currentLang==='ar'?'rtl':'ltr';
+    document.documentElement.lang=currentLang==='ar'?'ar':'en';
+    rerenderIfReady();
+  };
+  /* Reduce accidental horizontal overflow on small screens. */
+  document.documentElement.style.overflowX='hidden';
+  document.body.style.overflowX='hidden';
+  setTimeout(()=>{try{rerenderIfReady()}catch(e){}},250);
+})();
+</script>
+
+</body>
+</html>
